@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -e
+
+# BYTETOOLS sepcifies where this reop located.
+
+if [[ -z "$BYTETOOLS" ]]; then
+  echo "Expected BYTETOOLS environment to be set."
+  exit 1
+fi
+
+PWD=$(basename $PWD)
+GEN_SRC="$PWD.ge"
+CMP_SRC="$PWD.mp"
+GEN_TEM="$BYTETOOLS/gen.cc"
+PRB_TEM="$BYTETOOLS/template.cc"
+PRB_MKF="$BYTETOOLS/Makefile"
+
+if [[ "$1" == "-m" ]]; then
+  # byte-sketch -m problem
+  PRB_TEM="$BYTETOOLS/template-kickstart.cc"
+  shift
+elif [[ "$1" == "gen" ]]; then
+  cat "$GEN_TEM" > "$GEN_SRC"
+  subl "$GEN_SRC"
+  exit 0
+elif [[ "$1" == "cmp" ]]; then
+	subl "$CMP_SRC"
+	exit 0
+fi
+
+problem="$*"
+if test -d $problem; then
+  echo "==> Problem $problem already exists."
+  exit 1
+fi
+mkdir -p $problem
+prb=$(basename "$problem")
+ctime=$(date "+%Y-%m-%d %H:%M:%S")
+sed -e "s/\\\$NAME/$prb/g" \
+    -e "s/\\\$DATE/$ctime/g" \
+    "$PRB_TEM" > "$problem/$prb.cc"
+
+sed -e "s|\\\$TESTS|$prb|g" \
+    -e "s|\\\$CMP|$prb|g" \
+    -e "s|\\\$GEN|$prb|g" \
+    "$PRB_MKF" > "$problem/Makefile"
+
+echo "==> Problem $problem created."
+
+cd $problem
+inp="$prb.in"
+src="$prb.cc"
+touch "$inp" && echo "dummy stuff" > "$inp"
+subl "$inp"
+# Sleep for a while so that the sublime plugin can work
+# to put the newly created file at the most right tab.
+sleep 0.1
+subl "$src"
+byte-repl $prb

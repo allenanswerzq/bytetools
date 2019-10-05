@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -o pipefail
+set -e
+
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$CURRENT_DIR/byte-com"
+
+# When press ctrl+c, it will call `trap_ctrlc`.
+trap "trap_ctrlc" 2
+
+debug=true
+timeout="timeout"
+target="$1"
+inputs="$(ls *.inp | sort -g)"
+if [[ "$2" == "0" ]]; then debug=false; fi
+if [[ `uname` == Darwin ]]; then timeout="gtimeout"; fi
+
+total_cnt=0
+correct_cnt=0
+for i in $inputs; do
+  # Print input samples
+  print_header "${i%.inp}"
+  print_stdout "$i"
+
+  # run: .inp --> .out
+  # dif: .out --> .rel
+  out="${i%.inp}".out
+  rel="${i%.inp}".rel
+  if [[ $debug == true ]]; then
+    cmd="$timeout -s2 5 ./$target < $i"
+  else
+    cmd="$timeout -s2 5 time ./$target < $i"
+  fi
+
+  if ! { bash -c "$cmd"; } >"$out" 2>std_err; then
+    error "Runtime error, Check source code, Please :(-"
+    exit 1
+  fi
+
+  if [[ $debug == true ]]; then
+    print_banner "debug"
+    print_stdout std_err
+    rm -rf std_err
+    print_banner "output"
+    cat "$out"
+  fi
+
+  if [[ $debug == false ]]; then
+    print_banner "time"
+    print_stdout std_err
+    rm -rf std_err
+  fi
+
+  total_cnt=$((total_cnt + 1))
+  if [[ -e "$rel" ]]; then
+    if diff -y "$out" "$rel" >/dev/null 2>&1; then
+      correct_cnt=$((correct_cnt + 1))
+      pass "\\t\\t\\t\\t\\t\\tPASSED"
+    else
+      error "\\t\\t\\t\\t\\t\\tFailed"
+      diff -y -W 90 "$out" "$rel" || true
+    fi
+  else
+    correct_cnt=$((correct_cnt + 1))
+    error "\\t\\t\\t\\t\\t\\tCustom"
+  fi
+done
+
+print_header "all done"
+
+if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
+  pass "ALL TESTS PASSED! :-)"
+else
+  error "SOME TESTS FAILED! )-:"
+fi

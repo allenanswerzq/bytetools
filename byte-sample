@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -e
+
+INP="$1"
+TMP="/tmp"
+WRONG="$TMP/algo-wrong"
+SAMPLE="$TMP/algo-samples"
+
+if [[ -z "$INP" ]]; then exit 0; fi
+
+if [[ -f "$SAMPLE" ]]; then
+  mv -f "$SAMPLE" "$INP"
+  if [[ -f "$WRONG" ]]; then
+    echo -e "\n" "$INP"
+    cat "$WRONG" | tee -a "$INP"
+    rm -f "$WRONG"
+  fi
+fi
+
+byte-split "$INP"

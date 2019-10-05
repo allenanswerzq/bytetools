@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$CURRENT_DIR/byte-com"
+
+trap 'trap_repl' 2
+prb="$1"
+cmd="make"
+while true ; do
+  clear && tmux clear-history
+  ctime=$(date "+%Y-%m-%d %H:%M:%S")
+  perl -pi -e "s|.*accepted.*| \* accepted  : $ctime|g" "$prb".cc
+  sleep 0.1
+  $cmd 
+  error_wln "Press Enter to continue"
+  read newline
+done

@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+import os
+import sys
+import copy
+import signal
+from pathlib import Path
+
+# Script used to parse algorithm samples into files.
+# Two kinds of paring supported:
+# 1. orinial texts samples copied from oj websites. Most of them
+# have format as following:
+# input
+# 5
+# CY??Y
+# output
+# Yes
+# input
+# 5
+# C?C?Y
+# output
+# Yes
+# 2. Custom test cases paring also supported,
+#  i dont want to create a seperate test file every time.
+
+INPUT_SIGN = "nput"
+OUTPUT_SIGN = "utput"
+INPUT_SUFX = ".inp"
+OUTPUT_SUFX = ".rel"
+INPUT_FILE = "tests.in"
+customs = []
+inputs = []
+outputs = []
+
+def is_plain_text(texts):
+  return INPUT_SIGN in texts and OUTPUT_SIGN in texts
+
+
+def write(name, content):
+  with open(name, 'w') as f:
+    for k, line in enumerate(content):
+      if line == "//n":
+        f.write("\n")
+      else:
+        f.write(line + "\n");
+
+
+def write_two(name, content, nl=''):
+  with open(name, 'w') as f:
+    for k, v in enumerate(content):
+      for line in v:
+        f.write(line + nl)
+      if k < len(content) - 1:
+        f.write("\n")
+
+
+def write_out():
+  cnt = len(customs)
+  for k, v in enumerate(customs):
+    write(str(k) + INPUT_SUFX, v)
+
+  for k, v in enumerate(inputs):
+    write(str(cnt + k) + INPUT_SUFX, v)
+
+  for k, v in enumerate(outputs):
+    write(str(cnt + k) + OUTPUT_SUFX, v)
+
+  customs.extend(inputs)
+  write_two(INPUT_FILE, customs, nl='\n')
+
+
+def parse_plain_text(texts):
+  inputs_ok = 0
+  outputs_ok = 0
+  bag = []
+  texts = texts.rstrip().split('\n')
+  for line in texts:
+    if INPUT_SIGN in line or OUTPUT_SIGN in line:
+      if inputs_ok:
+        inputs.append(copy.deepcopy(bag))
+
+      if outputs_ok:
+        outputs.append(copy.deepcopy(bag))
+      bag.clear()
+
+    if INPUT_SIGN in line:
+      inputs_ok = 1
+      outputs_ok = 0
+
+    elif OUTPUT_SIGN in line:
+      inputs_ok = 0
+      outputs_ok = 1
+
+    else:
+      if inputs_ok or outputs_ok:
+        bag.append(line.rstrip())
+
+  if len(bag) > 0:
+    outputs.append(copy.deepcopy(bag))
+
+
+def parse_custom(texts):
+  # Supports add custom test cases, i only need to put
+  # my test case into a `*.in` file, it will automatically save
+  # all those test cases.
+  # Note: for custom test cases, no real output value for comparison
+  bag = []
+  texts = texts.rstrip().split('\n')
+  for line in texts:
+    if INPUT_SUFX in line:
+      ok = 1;
+    elif line == '':
+      if len(bag) > 0 and ok == 0:
+        customs.append(copy.deepcopy(bag))
+        bag.clear()
+    else:
+      bag.append(line.rstrip())
+  if len(bag) > 0:
+    customs.append(copy.deepcopy(bag))
+
+
+def parse(fn):
+  with open(fn, 'r') as f:
+    texts = f.read().rstrip().split('\n')
+    bag = ""
+    for line in texts:
+      if line == '':
+        if is_plain_text(bag):
+          parse_plain_text(bag)
+        else:
+          parse_custom(bag)
+        bag = ""
+      else:
+        bag += line
+        bag += '\n'
+    if is_plain_text(bag):
+      parse_plain_text(bag)
+    else:
+      parse_custom(bag)
+  write_out()
+
+if __name__ == "__main__":
+  if len(sys.argv) < 2:
+    print("No file need to parse, exiting..")
+    exit(0)
+  INPUT_FILE = sys.argv[1]
+  parse(sys.argv[1])

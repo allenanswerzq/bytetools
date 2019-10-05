@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+mkdir -p $HOME/.local/bin/
+
+SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DST="$HOME/.local/bin"
+
+bytes=$(ls -d byte-* | egrep -v 'byte-dump')
+for byte in $bytes; do
+  echo "Linking $DST/$byte"
+  ln -sf "$SRC/$byte" "$DST/$byte"
+done
+
+cd "$SRC/byte-dump"
+npm install
+echo -en "\nInstall finished!!!\n"
+

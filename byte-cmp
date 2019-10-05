@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -o pipefail
+set -e
+
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$CURRENT_DIR/byte-com"
+
+# When press ctrl+c, it will call `trap_ctrlc`.
+trap "trap_ctrlc" 2
+
+timeout="timeout"
+target="$1"
+inputs="$(ls *.inp | sort -g)"
+if [[ `uname` == Darwin ]]; then timeout="gtimeout"; fi
+
+total_cnt=0
+correct_cnt=0
+for i in $inputs; do
+  print_header "${i%.inp}"
+  # run: .inp --> .cmp
+  # dif: .out --> .cmp
+  out="${i%.inp}".out
+  rel="${i%.inp}".cmp
+  cmd="$timeout -s2 5 ./$target < $i"
+  if ! { bash -c "$cmd"; } >"$rel" 2>std_err; then
+    error "Runtime error, Check source code, Please :(-"
+    exit 1
+  fi
+  rm -rf std_err
+
+  total_cnt=$((total_cnt + 1))
+  if [[ -e "$out" && -e "$rel" ]]; then
+    if diff -y "$out" "$rel" >/dev/null 2>&1; then
+      correct_cnt=$((correct_cnt + 1))
+      pass "\\t\\t\\t\\t\\t\\tPASSED"
+    else
+      error "\\t\\t\\t\\t\\t\\tFailed"
+      print_compare_diff "$i"
+      exit 1
+    fi
+  else
+    error "Both $out and $rel must be existed."
+    exit 1
+  fi
+done
+
+print_header "all done"
+
+if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
+  pass "ALL TESTS PASSED! :-)"
+else
+  error "SOME TESTS FAILED! )-:"
+fi

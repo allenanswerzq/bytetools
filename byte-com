@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+info() {
+  printf "\e[1;36m$*\e[m\n"
+}
+
+pass() {
+  printf "\e[1;32m$*\e[m\n"
+}
+
+warning() {
+  printf "\e[1;33m$*\e[m\n"
+}
+
+error() {
+  printf "\e[1;31m$*\e[m\n"
+}
+
+error_wln() {
+  printf "\e[1;31m$*\e[m"
+}
+
+print_header() {
+  echo "//--------------------------------------------{$*}-----//"
+}
+
+print_banner() {
+  echo "----------------------------------------------{$*}---"
+}
+
+print_stdout() {
+  local chars=$(cat $1 | wc -c)
+  local raw="$(cat $1)"
+  if [[ chars -ge 1000 ]]; then
+    raw="$(echo "$raw" | head -c 1000)......(too long ignored)......"
+  fi
+  echo "$raw"
+}
+
+print_compare_diff() {
+  local inp=$1
+  local out="${inp%.inp}".out
+  local rel="${inp%.inp}".cmp
+  echo "Input: "
+  print_stdout "$i"
+  print_banner "diff"
+  diff -y -W 90 "$out" "$rel" || true
+  inp=$(cat "$inp")
+  out=$(cat "$out")
+  # TODO(zq7): maybe save sample tests here.
+  rm -f *.rel *.inp *.out *.cmp *.gv
+  echo "$out" > 0.rel
+  echo "$inp" > 0.inp
+  echo "$inp" > $(basename $PWD).in
+}
+
+trap_ctrlc () {
+  error "Timeout after runnig for 5s, loop might exists"
+  exit 1
+}
+
+cnt=1
+trap_repl () {
+  error "Caught ctrlc $cnt"
+  test $cnt -ge 10 && exit 124
+  cnt=$(expr $cnt + 1)
+}
