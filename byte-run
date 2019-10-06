@@ -58,6 +58,7 @@ for i in $inputs; do
       pass "\\t\\t\\t\\t\\t\\tPASSED"
     else
       error "\\t\\t\\t\\t\\t\\tFailed"
+      print_banner "diff"
       diff -y -W 90 "$out" "$rel" || true
     fi
   else

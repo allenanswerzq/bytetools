@@ -10,7 +10,7 @@ while true ; do
   ctime=$(date "+%Y-%m-%d %H:%M:%S")
   perl -pi -e "s|.*accepted.*| \* accepted  : $ctime|g" "$prb".cc
   sleep 0.1
-  $cmd 
-  error_wln "Press Enter to continue"
+  $cmd
+  echo -n "Press Enter to continue"
   read newline
 done
