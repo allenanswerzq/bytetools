@@ -30,10 +30,10 @@ print_banner() {
 
 print_stdout() {
   local chars=$(cat $1 | wc -c)
-  local raw="$(cat $1)"
-  if [[ chars -ge 1000 ]]; then
-    raw="$(echo "$raw" | head -c 1000)......(too long ignored)......"
-  fi
+  local raw=$(cat $1 | sed 's/    / /g')
+  # if [[ chars -ge 1000 ]]; then
+  #   raw="$(head -c 1000 $1)......(too long ignored)......"
+  # fi
   echo "$raw"
 }
 
@@ -44,7 +44,7 @@ print_compare_diff() {
   echo "Input: "
   print_stdout "$i"
   print_banner "diff"
-  diff -y -W 90 "$out" "$rel" || true
+  diff -y -W 60 "$out" "$rel" || true
   inp=$(cat "$inp")
   out=$(cat "$out")
   # TODO(zq7): maybe save sample tests here.

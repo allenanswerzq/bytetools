@@ -23,6 +23,9 @@ for i in $inputs; do
   rel="${i%.inp}".cmp
   cmd="$timeout -s2 5 ./$target < $i"
   if ! { bash -c "$cmd"; } >"$rel" 2>std_err; then
+    print_banner "debug"
+    print_stdout std_err
+    rm -rf std_err
     error "Runtime error, Check source code, Please :(-"
     exit 1
   fi
@@ -32,9 +35,9 @@ for i in $inputs; do
   if [[ -e "$out" && -e "$rel" ]]; then
     if diff -y "$out" "$rel" >/dev/null 2>&1; then
       correct_cnt=$((correct_cnt + 1))
-      pass "\\t\\t\\t\\t\\t\\tPASSED"
+      pass "\\t\\t\\t\\t\\tPASSED"
     else
-      error "\\t\\t\\t\\t\\t\\tFailed"
+      error "\\t\\t\\t\\t\\tFailed"
       print_compare_diff "$i"
       exit 1
     fi
@@ -44,10 +47,10 @@ for i in $inputs; do
   fi
 done
 
-print_header "all done"
+print_header "done"
 
 if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
-  pass "ALL TESTS PASSED! :-)"
+  pass "ALL TESTS PASSED."
 else
-  error "SOME TESTS FAILED! )-:"
+  error "SOME TESTS FAILED."
 fi

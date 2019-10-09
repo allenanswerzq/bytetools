@@ -52,13 +52,13 @@ samples: clean
 # dif: .out --> .rel
 test: samples $(ELF)
 	@echo byte-run $(ELF)
-	@unbuffer byte-run $(ELF) $(DEBUG)
+	@byte-run $(ELF) $(DEBUG)
 
 # run: .inp --> .cmp
 # dif: .out --> .cmp
 comp: samples $(CMP)
 	@echo byte-cmp $(CMP)
-	@unbuffer byte-cmp $(CMP)
+	@byte-cmp $(CMP)
 
 gen: $(GEN)
 	@rm -rf *.rel *.pdf *.gv

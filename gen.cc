@@ -2,6 +2,7 @@
 #include "rnds.h"
 #include "graph.h"
 using namespace std;
+typedef long long ll;
 
 template<class T> void puts(T t) { cout << t << "\n"; }
 template<class T, class U, class... G>

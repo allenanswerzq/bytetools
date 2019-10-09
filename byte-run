@@ -33,6 +33,9 @@ for i in $inputs; do
   fi
 
   if ! { bash -c "$cmd"; } >"$out" 2>std_err; then
+    print_banner "debug"
+    print_stdout std_err
+    rm -rf std_err
     error "Runtime error, Check source code, Please :(-"
     exit 1
   fi
@@ -51,26 +54,31 @@ for i in $inputs; do
     rm -rf std_err
   fi
 
-  total_cnt=$((total_cnt + 1))
-  if [[ -e "$rel" ]]; then
-    if diff -y "$out" "$rel" >/dev/null 2>&1; then
-      correct_cnt=$((correct_cnt + 1))
-      pass "\\t\\t\\t\\t\\t\\tPASSED"
+  if [[ $debug == true ]]; then
+    total_cnt=$((total_cnt + 1))
+    if [[ -e "$rel" ]]; then
+      if diff -y "$out" "$rel" >/dev/null 2>&1; then
+        correct_cnt=$((correct_cnt + 1))
+        pass "\\t\\t\\t\\t\\tPASSED"
+      else
+        error "\\t\\t\\t\\t\\tFailed"
+        print_banner "diff"
+        diff -y -W 60 "$out" "$rel" || true
+      fi
     else
-      error "\\t\\t\\t\\t\\t\\tFailed"
-      print_banner "diff"
-      diff -y -W 90 "$out" "$rel" || true
+      correct_cnt=$((correct_cnt + 1))
+      error "\\t\\t\\t\\t\\tCustom"
     fi
-  else
-    correct_cnt=$((correct_cnt + 1))
-    error "\\t\\t\\t\\t\\t\\tCustom"
   fi
 done
 
-print_header "all done"
+print_header "done"
 
-if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
-  pass "ALL TESTS PASSED! :-)"
-else
-  error "SOME TESTS FAILED! )-:"
+if [[ $debug == true ]]; then
+  if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
+    pass "ALL TESTS PASSED."
+  else
+    error "SOME TESTS FAILED."
+  fi
 fi
+
