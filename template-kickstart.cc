@@ -6,6 +6,7 @@
 using namespace std;
 #define x first
 #define y second
+#define mt make_tuple
 #ifndef LOCAL
 #define trace(...)
 #endif
