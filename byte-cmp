@@ -21,12 +21,12 @@ for i in $inputs; do
   # dif: .out --> .cmp
   out="${i%.inp}".out
   rel="${i%.inp}".cmp
-  cmd="$timeout -s2 5 ./$target < $i"
+  cmd="$timeout -s2 $TIME_LIMITS ./$target < $i"
   if ! { bash -c "$cmd"; } >"$rel" 2>std_err; then
     print_banner "debug"
     print_stdout std_err
     rm -rf std_err
-    error "Runtime error, Check source code, Please :(-"
+    error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi
   rm -rf std_err

@@ -54,8 +54,10 @@ print_compare_diff() {
   echo "$inp" > $(basename $PWD).in
 }
 
+TIME_LIMITS=3
+
 trap_ctrlc () {
-  error "Timeout after runnig for 5s, loop might exists"
+  error "Timeout after runnig for ($TIME_LIMITS)s, loop might exist."
   exit 1
 }
 

@@ -3,6 +3,7 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$CURRENT_DIR/byte-com"
 
 trap 'trap_repl' 2
+
 prb="$1"
 cmd="make"
 while true ; do

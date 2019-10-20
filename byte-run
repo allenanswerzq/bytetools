@@ -27,16 +27,16 @@ for i in $inputs; do
   out="${i%.inp}".out
   rel="${i%.inp}".rel
   if [[ $debug == true ]]; then
-    cmd="$timeout -s2 5 ./$target < $i"
+    cmd="$timeout -s2 $TIME_LIMITS ./$target < $i"
   else
-    cmd="$timeout -s2 5 time ./$target < $i"
+    cmd="$timeout -s2 $TIME_LIMITS time ./$target < $i"
   fi
 
   if ! { bash -c "$cmd"; } >"$out" 2>std_err; then
     print_banner "debug"
     print_stdout std_err
     rm -rf std_err
-    error "Runtime error, Check source code, Please :(-"
+    error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi
 
