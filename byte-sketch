@@ -2,6 +2,7 @@
 set -e
 
 # BYTETOOLS sepcifies where this reop located.
+BYTETOOLS="$ALGO/bytetools"
 
 if [[ -z "$BYTETOOLS" ]]; then
   echo "Expected BYTETOOLS environment to be set."
