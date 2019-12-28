@@ -26,23 +26,25 @@ CMP := $(ELF)_mp
 GEN := $(ELF)_ge
 INP := $(ELF).in
 
-all: test
+all: curdir test
 
-% : %.cc Makefile
+curdir:
+	@echo $(CURDIR)
+
+% : %.cc
 	@echo "cxx $<"
 	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@
 
-%_mp : %.mp Makefile
+%_mp : %.mp
 	@echo "cxx $<"
 	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@
 
-%_ge : %.ge Makefile
+%_ge : %.ge
 	@echo "cxx $<"
 	@$(CXX) -x c++ $< -I$(ALGOROOT)/third_party/jngen/includes -o $@
 
 clean:
-	@echo $(CURDIR)
-	@-rm -rf *.inp *_mp *_ge
+	@-rm -rf $(ELF) *_mp *_ge
 
 samples: clean
 	@echo byte-sample $(INP)

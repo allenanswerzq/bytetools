@@ -45,16 +45,18 @@ print_compare_diff() {
   print_stdout "$i"
   print_banner "diff"
   diff -y -W 60 "$out" "$rel" || true
-  inp=$(cat "$inp")
-  out=$(cat "$out")
+  out="$rel"
+  mv "$out" "$out".cmp.bak
+  mv "$inp" "$inp".cmp.bak
   # TODO(zq7): maybe save sample tests here.
   rm -f *.rel *.inp *.out *.cmp *.gv
-  echo "$out" > 0.rel
-  echo "$inp" > 0.inp
-  echo "$inp" > $(basename $PWD).in
+  cp "$out".cmp.bak 0.rel
+  cp "$inp".cmp.bak 0.inp
+  cp "$inp".cmp.bak $(basename $PWD).in
+  rm -f *.bak
 }
 
-TIME_LIMITS=3
+TIME_LIMITS=5
 
 trap_ctrlc () {
   error "Timeout after runnig for ($TIME_LIMITS)s, loop might exist."

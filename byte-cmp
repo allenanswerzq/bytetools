@@ -21,14 +21,16 @@ for i in $inputs; do
   # dif: .out --> .cmp
   out="${i%.inp}".out
   rel="${i%.inp}".cmp
-  cmd="$timeout -s2 $TIME_LIMITS ./$target < $i"
-  if ! { bash -c "$cmd"; } >"$rel" 2>std_err; then
+  cmd="$timeout -s2 $TIME_LIMITS ./$target < $i >$rel 2>std_err"
+  if ! { bash -c "$cmd"; }; then
     print_banner "debug"
     print_stdout std_err
     rm -rf std_err
     error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi
+  print_stdout std_err
+  print_banner "debug"
   rm -rf std_err
 
   total_cnt=$((total_cnt + 1))
