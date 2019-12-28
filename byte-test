@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$CURRENT_DIR/byte-com"
+
+rm -f *.cmp
+for i in $(ls *.inp); do
+  echo $i;
+  rel="${i%.inp}".out
+  out="${i%.inp}".cmp
+  ./"$1" < $i > $out
+  if ! diff -y -W 60 "$out" "$rel"; then
+    rm -f *.cmp
+    exit 0
+  fi
+done
+rm -f *.cmp
+pass "ALL TESTS PASSED."
