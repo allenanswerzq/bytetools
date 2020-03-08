@@ -21,6 +21,9 @@ ifeq ($(DEBUG), 1)
 	DBGFLAGS += -DLOCAL
 endif
 
+# byte-test config
+cnts ?= 10
+
 ELF := $(notdir $(CURDIR))
 CMP := $(ELF)_mp
 GEN := $(ELF)_ge
@@ -47,29 +50,37 @@ clean:
 	@-rm -rf $(ELF) *_mp *_ge
 
 samples: clean
+	@rm -rf *.inp
 	@echo byte-sample $(INP)
 	@byte-sample $(INP)
 
-# run: .inp --> .out
-# dif: .out --> .rel
+# Run with sample input.
 test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG)
 
-# run: .inp --> .cmp
-# dif: .out --> .cmp
-comp: samples $(CMP)
-	@echo byte-cmp $(CMP)
-	@byte-cmp $(CMP)
+# # Compare with random generated input.
+# comp_sample: samples $(ELF)
+# 	@echo byte-test $(ELF)
+# 	@byte-test $(ELF) $(cnts) 2
+
+# Compare with random generated input.
+comp: $(CMP) $(GEN) $(ELF)
+	@echo byte-test
+	@byte-test $(ELF) $(cnts) 1
+
+# Run with random generated input data.
+run: $(GEN) $(ELF)
+	@echo byte-test
+	@byte-test $(ELF) $(cnts) 0
 
 gen: $(GEN)
 	@rm -rf *.rel *.pdf *.gv
-	./$(GEN) | tee $(INP)
 
 memo:
 	ps aux | grep "[.]/$(ELF)$$" | awk '{$$6=int($$6/1024)"M";}{print;}'
 
-.PHONY: all clean run test comp
+.PHONY: all clean run test comp run
 
 print-%:
 	@echo $* = $($*)

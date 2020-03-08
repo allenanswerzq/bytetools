@@ -56,9 +56,15 @@ print_compare_diff() {
   rm -f *.bak
 }
 
+timeout="timeout"
+if [[ `uname` == Darwin ]]; then timeout="gtimeout"; fi
+
 TIME_LIMITS=5
 
 trap_ctrlc () {
+  if [[ -f std_err ]]; then
+    print_stdout std_err
+  fi
   error "Timeout after runnig for ($TIME_LIMITS)s, loop might exist."
   exit 1
 }

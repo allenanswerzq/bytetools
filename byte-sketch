@@ -4,6 +4,11 @@ set -e
 # BYTETOOLS sepcifies where this reop located.
 BYTETOOLS="$ALGO/bytetools"
 
+if [[ -z "$ALGO" ]]; then
+  echo "Expected ALGO environment to be set."
+  exit 1
+fi
+
 if [[ -z "$BYTETOOLS" ]]; then
   echo "Expected BYTETOOLS environment to be set."
   exit 1
@@ -33,7 +38,11 @@ problem="$*"
 if test -d $problem; then
   echo "==> Problem $problem already exists."
   exit 1
+elif [[ "$problem" == "test" ]]; then
+  echo "==> Can't create problem with name [test], cause of make cyclic rule."
+  exit 1
 fi
+
 mkdir -p $problem
 prb=$(basename "$problem")
 ctime=$(date "+%Y-%m-%d %H:%M:%S")

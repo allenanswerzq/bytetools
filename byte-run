@@ -9,11 +9,9 @@ source "$CURRENT_DIR/byte-com"
 trap "trap_ctrlc" 2
 
 debug=true
-timeout="timeout"
 target="$1"
 inputs="$(ls *.inp | sort -g)"
 if [[ "$2" == "0" ]]; then debug=false; fi
-if [[ `uname` == Darwin ]]; then timeout="gtimeout"; fi
 
 total_cnt=0
 correct_cnt=0

@@ -1,18 +1,35 @@
 #!/usr/bin/env bash
 
+# set -xep
+
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$CURRENT_DIR/byte-com"
 
-rm -f *.cmp
-for i in $(ls *.inp); do
-  echo $i;
-  rel="${i%.inp}".out
-  out="${i%.inp}".cmp
-  ./"$1" < $i > $out
-  if ! diff -y -W 60 "$out" "$rel"; then
-    rm -f *.cmp
-    exit 0
+elf=$1
+cnt=$2
+with_compare=$3
+
+for i in $(seq 1 "$cnt"); do
+  echo -n "test..$i  "
+  # echo "Generating..."
+  ./"$elf"_ge > $i.gg
+  #--------------------------------------
+  # echo "Running..."
+  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $i.gg > $i.ga 2>/dev/null"
+  if ! { bash -c "$cmd"; }; then
+    error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
+    cat $i.gg | tee $elf.in
+    exit 1
   fi
+  #--------------------------------------
+  if [[ "$with_compare" == "1" ]]; then
+    # echo "Comparing..."
+    ./"$elf"_mp < $i.gg > $i.gb 2>/dev/null
+    if ! diff -y -W 60 "$i.ga" "$i.gb" 2>&1 >/dev/null; then
+      cat $i.gg | tee $elf.in
+      exit 1
+    fi
+  fi
+  pass "     \\t\\t PASS"
+  rm -f $i.gg $i.ga $i.gb
 done
-rm -f *.cmp
-pass "ALL TESTS PASSED."
