@@ -9,8 +9,7 @@ elf=$1
 cnt=$2
 with_compare=$3
 
-for i in $(seq 1 "$cnt"); do
-  echo -n "test..$i  "
+run_test() {
   # echo "Generating..."
   ./"$elf"_ge > $i.gg
   #--------------------------------------
@@ -42,6 +41,11 @@ for i in $(seq 1 "$cnt"); do
       exit 1
     fi
   fi
-  pass "        \\t\\t PASS"
+  printf "test...$i \e[1;32m\\t\\t\\t PASS\e[m\n"
   rm -f $i.gg $i.ga $i.gb
+}
+
+for i in $(seq 1 "$cnt"); do
+  (run_test) &
+  if (( $i % 4 == 0 )); then wait; fi
 done
