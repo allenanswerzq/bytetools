@@ -42,10 +42,17 @@ run_test() {
     fi
   fi
   printf "test...$i \e[1;32m\\t\\t\\t PASS\e[m\n"
-  rm -f $i.gg $i.ga $i.gb
 }
 
+clean () {
+  rm -f *.gg *.ga *.gb
+  rm -f compare_error
+  rm -f run_err
+}
+
+clean
 for i in $(seq 1 "$cnt"); do
   (run_test) &
   if (( $i % 4 == 0 )); then wait; fi
 done
+clean
