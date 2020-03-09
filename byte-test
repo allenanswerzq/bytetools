@@ -15,21 +15,33 @@ for i in $(seq 1 "$cnt"); do
   ./"$elf"_ge > $i.gg
   #--------------------------------------
   # echo "Running..."
-  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $i.gg > $i.ga 2>/dev/null"
+  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $i.gg > $i.ga 2>run_err"
   if ! { bash -c "$cmd"; }; then
-    error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
-    cat $i.gg | tee $elf.in
+    error "\n----------------Run Error---------------------------\n"
+    cat run_err
+    error "\n-----------------------------------------------------\n"
+    # cat $i.gg | tee -a $elf.in
     exit 1
   fi
   #--------------------------------------
   if [[ "$with_compare" == "1" ]]; then
     # echo "Comparing..."
-    ./"$elf"_mp < $i.gg > $i.gb 2>/dev/null
+    cmd="./"$elf"_mp < $i.gg > $i.gb 2>compare_error"
+    if ! { bash -c "$cmd"; }; then
+      error "\n---------------Compare Error------------------------------\n"
+      cat compare_error
+      error "\n----------------------------------------------------------\n"
+      exit 1
+    fi
     if ! diff -y -W 60 "$i.ga" "$i.gb" 2>&1 >/dev/null; then
-      cat $i.gg | tee $elf.in
+      error "\n----------Different input---------------"
+      cat $i.gg
+      error "\n------------Output------------------------"
+      diff -y -W 60 "$i.ga" "$i.gb"
+      # cat $i.gg | tee -a $elf.in
       exit 1
     fi
   fi
-  pass "     \\t\\t PASS"
+  pass "        \\t\\t PASS"
   rm -f $i.gg $i.ga $i.gb
 done
