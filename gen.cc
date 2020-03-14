@@ -1,3 +1,4 @@
+#include <cassert>
 #include "array.h"
 #include "rnds.h"
 #include "graph.h"

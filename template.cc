@@ -12,6 +12,7 @@ using namespace std;
 #define trace(...)
 #endif
 typedef long long ll;
+typedef pair<int, int> pii;
 
 void solve() {
 }
