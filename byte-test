@@ -12,25 +12,36 @@ sync1=`mktemp`
 sync2=`mktemp`
 
 run_test() {
-  ./"$elf"_ge > $i.gg 2>run_err
+  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf"_ge > $i.gg 2>run_err"
+  if ! { bash -c "$cmd"; }; then
+    ( flock -x 2
+      if [[ -f "$sync1" ]]; then
+        error "\n\\\\\\--------Generating error(TLE or other issues): $1------//"
+        rm -f "$sync2"
+        exit 1
+      fi
+    ) 2>stderr
+    exit 1
+  fi
   #------------------------------------------------------------------------
   cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $1.gg > $1.ga 2>run_err"
   if ! { bash -c "$cmd"; }; then
     ( flock -x 2
       if [[ -f "$sync1" ]]; then
-        error "\n\\\\\\-------------------Running error: $1----------------------//"
+        error "\n\\\\\\-----------Running error(TLE or other issues): $1----//"
         cat run_err
         error "\n--------------------------------------------------------------"
-        flock -x $elf.in
+        flock -x $elf.in 1>&2 2>/dev/null
         echo " " >> $elf.in
         cat $1.gg | tee -a $elf.in
         echo " " >> $elf.in
-        flock -u $elf.in
+        flock -u $elf.in 1>&2 2>/dev/null
         error "\n\\\\\\-----------------------------------------------------//\n"
         rm -f "$sync2"
         exit 1
       fi
-    )2>stderr
+    ) 2>stderr
+    exit 1
   fi
   #---------------------------------------------------------------------
   if [[ "$with_compare" == "1" ]]; then
@@ -38,13 +49,14 @@ run_test() {
     if ! { bash -c "$cmd"; }; then
       ( flock -x 2
         if [[ -f "$sync1" ]]; then
-          error "\n---------------Running error------------------------------\n"
+          error "\n------------------Comparing error: $1------------------------\n"
           cat compare_error
           error "\n----------------------------------------------------------\n"
           rm -f "$sync2"
           exit 1
         fi
       ) 2>stderr
+      exit 1
     fi
     if [[ ! -f "$1.ga" || ! -f "$1.gb" ]]; then
       ( flock -x 2
@@ -54,6 +66,7 @@ run_test() {
           exit 1
         fi
       ) 2>stderr
+      exit 1
     fi
     if ! diff -y -W 60 "$1.ga" "$1.gb" 2>&1 >/dev/null; then
       # NOTE: use flock to sync subprocess.
@@ -62,11 +75,12 @@ run_test() {
           error "\n\\\\\\-------------------Comparing result $1----------------------//"
           diff -y -W 60 "$1.ga" "$1.gb"
           error "---------------------------------------------------------------"
-          flock -x $elf.in
-          echo " " >> $elf.in
+          flock -x $elf.in 1>&2 2>/dev/null
+          echo "Input" >> $elf.in
           cat $1.gg | tee -a $elf.in
-          echo " " >> $elf.in
-          flock -u $elf.in
+          echo "Output" >> $elf.in
+          cat $1.gb | tee -a $elf.in
+          flock -u $elf.in 1>&2 2>/dev/null
           error "\n\\\\\\---------------------------------------------------------//\n"
           rm -f "$sync2"
           exit 1

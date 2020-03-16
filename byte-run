@@ -34,6 +34,7 @@ for i in $inputs; do
     print_banner "debug"
     print_stdout std_err
     rm -rf std_err
+    error "\n---------------------------------------------------------------------"
     error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi

@@ -30,6 +30,11 @@ elif [[ "$1" == "gen" ]]; then
   subl "$GEN_SRC"
   exit 0
 elif [[ "$1" == "cmp" ]]; then
+  prb=$(basename "$problem")
+  ctime=$(date "+%Y-%m-%d %H:%M:%S")
+  sed -e "s/\\\$NAME/$prb/g" \
+      -e "s/\\\$DATE/$ctime/g" \
+      "$PRB_TEM" > "$CMP_SRC"
 	subl "$CMP_SRC"
 	exit 0
 fi
