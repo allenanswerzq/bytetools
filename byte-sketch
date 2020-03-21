@@ -55,10 +55,7 @@ sed -e "s/\\\$NAME/$prb/g" \
     -e "s/\\\$DATE/$ctime/g" \
     "$PRB_TEM" > "$problem/$prb.cc"
 
-sed -e "s|\\\$TESTS|$prb|g" \
-    -e "s|\\\$CMP|$prb|g" \
-    -e "s|\\\$GEN|$prb|g" \
-    "$PRB_MKF" > "$problem/Makefile"
+cp "$PRB_MKF" "$problem/Makefile"
 
 echo "==> Problem $problem created."
 

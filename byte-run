@@ -17,7 +17,8 @@ total_cnt=0
 correct_cnt=0
 for i in $inputs; do
   # Print input samples
-  print_header "${i%.inp}"
+  print_split '=' "${i%.inp}"
+  # full_line '-'
   print_stdout "$i"
 
   # run: .inp --> .out
@@ -31,24 +32,24 @@ for i in $inputs; do
   fi
 
   if ! { bash -c "$cmd"; }; then
-    print_banner "debug"
+    print_split '-' "debug"
     print_stdout std_err
     rm -rf std_err
-    error "\n---------------------------------------------------------------------"
+    error_split '-' "run error"
     error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi
 
   if [[ $debug == true ]]; then
-    print_banner "debug"
+    print_split '-' "debug"
     print_stdout std_err
     rm -rf std_err
-    print_banner "output"
+    print_split '-' "output"
     cat "$out"
   fi
 
   if [[ $debug == false ]]; then
-    print_banner "time"
+    print_split '-' "time"
     print_stdout std_err
     rm -rf std_err
   fi
@@ -58,20 +59,20 @@ for i in $inputs; do
     if [[ -e "$rel" ]]; then
       if diff -y "$out" "$rel" >/dev/null 2>&1; then
         correct_cnt=$((correct_cnt + 1))
-        pass "\\t\\t\\t\\t\\tPASSED"
+        pass_right "PASSED"
       else
-        error "\\t\\t\\t\\t\\tFailed"
-        print_banner "diff"
-        diff -y -W 60 "$out" "$rel" || true
+        error_right "Failed"
+        error_split '-' "compare"
+        diff -y -W $WIDTH "$out" "$rel" || true
       fi
     else
       correct_cnt=$((correct_cnt + 1))
-      error "\\t\\t\\t\\t\\tCustom"
+      error_right "Custom"
     fi
   fi
 done
 
-print_header "done"
+print_split '=' "done"
 
 if [[ $debug == true ]]; then
   if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then

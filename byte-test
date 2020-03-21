@@ -28,15 +28,15 @@ run_test() {
   if ! { bash -c "$cmd"; }; then
     ( flock -x 2
       if [[ -f "$sync1" ]]; then
-        error "\n\\\\\\-----------Running error(TLE or other issues): $1----//"
+        error_split '-' "Running error(TLE or other issues): $1"
         cat run_err
-        error "\n--------------------------------------------------------------"
+        error_split '-' ""
         flock -x $elf.in 1>&2 2>/dev/null
         echo " " >> $elf.in
         cat $1.gg | tee -a $elf.in
         echo " " >> $elf.in
         flock -u $elf.in 1>&2 2>/dev/null
-        error "\n\\\\\\-----------------------------------------------------//\n"
+        error_split '-' ""
         rm -f "$sync2"
         exit 1
       fi
@@ -49,9 +49,9 @@ run_test() {
     if ! { bash -c "$cmd"; }; then
       ( flock -x 2
         if [[ -f "$sync1" ]]; then
-          error "\n------------------Comparing error: $1------------------------\n"
+          error_split '-' "Comparing error: $1"
           cat compare_error
-          error "\n----------------------------------------------------------\n"
+          error_split '-' ""
           rm -f "$sync2"
           exit 1
         fi
@@ -61,7 +61,7 @@ run_test() {
     if [[ ! -f "$1.ga" || ! -f "$1.gb" ]]; then
       ( flock -x 2
         if [[ -f "$sync1" ]]; then
-          error "\n\\\\------------No file generated to diff-------------------//\n"
+          error_split "No file generated to diff"
           rm -f "$sync2"
           exit 1
         fi
@@ -72,16 +72,16 @@ run_test() {
       # NOTE: use flock to sync subprocess.
       ( flock -x 2
         if [[ -f "$sync1" ]]; then
-          error "\n\\\\\\-------------------Comparing result $1----------------------//"
+          error_split '-' "Comparing result $1"
           diff -y -W 60 "$1.ga" "$1.gb"
-          error "---------------------------------------------------------------"
+          error_split '-' ""
           flock -x $elf.in 1>&2 2>/dev/null
           echo "Input" >> $elf.in
           cat $1.gg | tee -a $elf.in
           echo "Output" >> $elf.in
           cat $1.gb | tee -a $elf.in
           flock -u $elf.in 1>&2 2>/dev/null
-          error "\n\\\\\\---------------------------------------------------------//\n"
+          error_split '-' ""
           rm -f "$sync2"
           exit 1
         fi

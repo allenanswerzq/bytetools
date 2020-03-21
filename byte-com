@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# set -x
+
 info() {
   printf "\e[1;36m$*\e[m\n"
 }
@@ -16,16 +18,54 @@ error() {
   printf "\e[1;31m$*\e[m\n"
 }
 
+pass_right() {
+  msg="$1"
+  tot=$WIDTH
+  len=$(echo -n "$msg" | wc -m)
+  half=$(echo "($tot - $len - 8)" | bc)
+  printf '\e[1;32m%*s' "$half"
+  printf "$msg\e[m\n"
+}
+
+error_right() {
+  msg="$1"
+  tot=$WIDTH
+  len=$(echo -n "$msg" | wc -m)
+  half=$(echo "($tot - $len - 8)" | bc)
+  printf '\e[1;31m%*s' "$half"
+  printf "$msg\e[m\n"
+}
+
 error_wln() {
   printf "\e[1;31m$*\e[m"
 }
 
-print_header() {
-  echo "//--------------------------------------------{$*}-----//"
+print_split() {
+  ch=$1
+  msg=" $2 "
+  tot=$WIDTH
+  len=$(echo -n "$msg" | wc -m)
+  half=$(echo "($tot - $len) / 2" | bc)
+  printf '%*s' "$half" | tr ' ' "$ch"
+  printf "$msg"
+  printf '%*s\n' "$half" | tr ' ' "$ch"
 }
 
-print_banner() {
-  echo "----------------------------------------------{$*}---"
+full_line() {
+  ch=$1
+  tot=$WIDTH
+  printf '\e[1;33m%*s\e[m\n' "$tot" | tr ' ' "$ch"
+}
+
+error_split() {
+  ch=$1
+  msg=" $2 "
+  tot=$WIDTH
+  len=$(echo -n "$msg" | wc -m)
+  half=$(echo "($tot - $len) / 2" | bc)
+  printf '\e[1;31m%*s' "$half" | tr ' ' "$ch"
+  printf "$msg"
+  printf '%*s\e[m\n' "$half" | tr ' ' "$ch"
 }
 
 print_stdout() {
@@ -69,9 +109,5 @@ trap_ctrlc () {
   exit 1
 }
 
-# cnt=1
-# trap_repl () {
-#   error "Caught ctrlc $cnt"
-#   test $cnt -ge 10 && exit 124
-#   cnt=$(expr $cnt + 1)
-# }
+# Get the terminal width
+WIDTH=$(tput cols)
