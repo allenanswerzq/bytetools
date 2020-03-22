@@ -13,6 +13,12 @@ target="$1"
 inputs="$(ls *.inp | sort -g)"
 if [[ "$2" == "0" ]]; then debug=false; fi
 
+test_cnt="$(ls *.inp | wc -l)"
+for i in $(seq "$test_cnt" 100); do
+  rm -f "$i.out"
+  rm -f "$i.rel"
+done
+
 total_cnt=0
 correct_cnt=0
 for i in $inputs; do

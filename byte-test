@@ -10,87 +10,98 @@ cnt=$2
 with_compare=$3
 sync1=`mktemp`
 sync2=`mktemp`
+pid=$$
 
 run_test() {
-  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf"_ge > $i.gg 2>run_err"
+  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf"_ge > $i.gg 2>gen_err"
   if ! { bash -c "$cmd"; }; then
     ( flock -x 2
-      if [[ -f "$sync1" ]]; then
-        error "\n\\\\\\--------Generating error(TLE or other issues): $1------//"
+      if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+        error_split '-' "Generating error(TLE or other issues): $1"
+        cat gen_err
+        full_error_line '-'
         rm -f "$sync2"
-        exit 1
+        kill -SIGINT "$pid"
       fi
     ) 2>stderr
     exit 1
   fi
   #------------------------------------------------------------------------
-  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $1.gg > $1.ga 2>run_err"
-  if ! { bash -c "$cmd"; }; then
-    ( flock -x 2
-      if [[ -f "$sync1" ]]; then
-        error_split '-' "Running error(TLE or other issues): $1"
-        cat run_err
-        error_split '-' ""
-        flock -x $elf.in 1>&2 2>/dev/null
-        echo " " >> $elf.in
-        cat $1.gg | tee -a $elf.in
-        echo " " >> $elf.in
-        flock -u $elf.in 1>&2 2>/dev/null
-        error_split '-' ""
-        rm -f "$sync2"
-        exit 1
-      fi
-    ) 2>stderr
-    exit 1
-  fi
-  #---------------------------------------------------------------------
-  if [[ "$with_compare" == "1" ]]; then
-    cmd="./"$elf"_mp < $1.gg > $1.gb 2>compare_error"
+  if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+    cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $1.gg > $1.ga 2>run_err"
     if ! { bash -c "$cmd"; }; then
       ( flock -x 2
-        if [[ -f "$sync1" ]]; then
-          error_split '-' "Comparing error: $1"
-          cat compare_error
-          error_split '-' ""
+        if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+          error_split '-' "Running error(TLE or other issues): $1"
+          cat run_err
+          full_error_line '-'
+          flock -x $elf.in 1>&2 2>/dev/null
+          echo " " >> $elf.in
+          cat $1.gg | tee -a $elf.in
+          echo " " >> $elf.in
+          flock -u $elf.in 1>&2 2>/dev/null
+          full_error_line '-'
           rm -f "$sync2"
-          exit 1
+          kill -SIGINT "$pid"
         fi
       ) 2>stderr
       exit 1
+    fi
+  fi
+  #---------------------------------------------------------------------
+  if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+    if [[ "$with_compare" == "1" ]]; then
+      cmd="./"$elf"_mp < $1.gg > $1.gb 2>compare_error"
+      if ! { bash -c "$cmd"; }; then
+        ( flock -x 2
+          if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+            error_split '-' "Comparing error: $1"
+            cat compare_error
+            error_split '-' ""
+            rm -f "$sync2"
+            kill -SIGINT "$pid"
+          fi
+        ) 2>stderr
+        exit 1
+      fi
     fi
     if [[ ! -f "$1.ga" || ! -f "$1.gb" ]]; then
       ( flock -x 2
         if [[ -f "$sync1" ]]; then
-          error_split "No file generated to diff"
+          error_split '-' "No file generated to diff"
           rm -f "$sync2"
-          exit 1
+          kill -SIGINT "$pid"
         fi
       ) 2>stderr
       exit 1
     fi
-    if ! diff -y -W 60 "$1.ga" "$1.gb" 2>&1 >/dev/null; then
-      # NOTE: use flock to sync subprocess.
-      ( flock -x 2
-        if [[ -f "$sync1" ]]; then
+    # NOTE: use flock to sync subprocess.
+    if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+      if ! diff -y -W 60 "$1.ga" "$1.gb" 2>&1 >/dev/null; then
+        ( flock -x 2
           error_split '-' "Comparing result $1"
           diff -y -W 60 "$1.ga" "$1.gb"
-          error_split '-' ""
+          full_error_line '-'
           flock -x $elf.in 1>&2 2>/dev/null
           echo "Input" >> $elf.in
           cat $1.gg | tee -a $elf.in
           echo "Output" >> $elf.in
           cat $1.gb | tee -a $elf.in
           flock -u $elf.in 1>&2 2>/dev/null
-          error_split '-' ""
+          full_error_line '-'
           rm -f "$sync2"
-          exit 1
-        fi
-      ) 2>stderr
-      exit 1
+          kill -SIGINT "$pid"
+        ) 2>stderr
+        exit 1
+      fi
     fi
   fi
   ( flock -x 2
-    printf "test...$1 \e[1;32m\\t\\t\\t PASS\e[m\n"
+    msg="PASS"
+    if [[ "$with_compare" == "0" ]]; then
+      msg="RUN"
+    fi
+    printf "test...$1 \e[1;32m\\t\\t\\t $msg\e[m\n"
   ) 2>stderr
 }
 

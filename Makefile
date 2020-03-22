@@ -8,7 +8,7 @@ CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconve
 # By default sets to debug mode.
 DEBUG ?= 1
 ifeq ($(DEBUG), 1)
-	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g
+	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover
 	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
@@ -44,7 +44,7 @@ curdir:
 
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ -g $< -I$(ALGOROOT)/third_party/jngen/includes -I$(ALGOROOT) -o $@
+	@$(CXX) -x c++ --std=c++17 $< -I$(ALGOROOT)/third_party/jngen/includes -I$(ALGOROOT) -o $@
 
 clean:
 	@-rm -rf $(ELF) *_mp *_ge
