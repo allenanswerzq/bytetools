@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+
+# set -xep
+
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$CURRENT_DIR/byte-com"
+
+elf=$1
+cnt=$2
+with_compare=$3
+sync1=`mktemp`
+sync2=`mktemp`
+pid=$$
+
+run_test() {
+  pass=false
+  cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf"_ge > $i.gg 2>$1_gen_err"
+  if ! { bash -c "$cmd"; }; then
+    ( flock -x 2
+      if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+        error_split '-' "Generating error(TLE or other issues): $1"
+        len=$(wc -c gen_err | awk '{print $1}')
+        if [[ "$len" != "0" ]]; then
+          cat gen_err
+          full_error_line '-'
+        fi
+        rm -f "$sync2"
+        kill -SIGINT "$pid"
+      fi
+    ) 2>std_err
+    exit 1
+  fi
+  #------------------------------------------------------------------------
+  if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+    cmd=""$timeout" -s2 "$TIME_LIMITS" ./"$elf" < $1.gg > $1.ga 2>$1_run_err"
+    if ! { bash -c "$cmd"; }; then
+      ( flock -x 2
+        if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+          error_split '-' "Running error(TLE or other issues): $1"
+          len=$(wc -c run_err | awk '{print $1}')
+          if [[ "$len" != "0" ]]; then
+            cat gen_err
+            full_error_line '-'
+          fi
+          flock -x $elf.in 1>&2 2>/dev/null
+          echo " " >> $elf.in
+          cat $1.gg | tee -a $elf.in
+          echo " " >> $elf.in
+          flock -u $elf.in 1>&2 2>/dev/null
+          full_error_line '-'
+          rm -f "$sync2"
+          kill -SIGINT "$pid"
+        fi
+      ) 2>std_err
+      exit 1
+    fi
+  fi
+  #---------------------------------------------------------------------
+  if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+    if [[ "$with_compare" == "1" ]]; then
+      cmd="./"$elf"_mp < $1.gg > $1.gb 2>$1_cmp_err"
+      if ! { bash -c "$cmd"; }; then
+        ( flock -x 2
+          if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+            error_split '-' "Comparing error: $1"
+            len=$(wc -c comp_err | awk '{print $1}')
+            if [[ "$len" != "0" ]]; then
+              cat gen_err
+              full_error_line '-'
+            fi
+            rm -f "$sync2"
+            kill -SIGINT "$pid"
+          fi
+        ) 2>std_err
+        exit 1
+      fi
+    fi
+    if [[ ! -f "$1.ga" || ! -f "$1.gb" ]]; then
+      ( flock -x 2
+        if [[ -f "$sync1" ]]; then
+          error_split '-' "No file generated to diff"
+          rm -f "$sync2"
+          kill -SIGINT "$pid"
+        fi
+      ) 2>std_err
+      exit 1
+    fi
+    # NOTE: use flock to sync subprocess.
+    if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+      if ! diff -y -W 60 "$1.ga" "$1.gb" 2>&1 >/dev/null; then
+        ( flock -x 2
+          if [[ -f "$sync1" ]] && [[ -f "$sync2" ]]; then
+            error_split '-' "Comparing result $1"
+            diff -y -W 60 "$1.ga" "$1.gb"
+            error_split '-' "Input"
+            flock -x $elf.in 1>&2 2>/dev/null
+            echo " " >> $elf.in
+            echo "Input" >> $elf.in
+            cat $1.gg | tee -a $elf.in
+            echo "Output" >> $elf.in
+            cat $1.gb | tee -a $elf.in 1>&2 2>/dev/null
+            flock -u $elf.in 1>&2 2>/dev/null
+            full_error_line '-'
+            rm -f "$sync2"
+            kill -SIGINT "$pid"
+          fi
+        ) 2>std_err
+        exit 1
+      else
+        pass=true
+      fi
+    fi
+  fi
+  ( flock -x 2
+    if [[ "$with_compare" == "0" ]]; then
+      printf "test...$1 \e[1;32m\\t\\t\\t RUN\e[m\n"
+    elif [[ "$pass" == "true" ]]; then
+      printf "test...$1 \e[1;32m\\t\\t\\t PASS\e[m\n"
+    fi
+  ) 2>std_err
+}
+
+trap cleanup 1 2 3 6 9
+
+cleanup() {
+  rm -f "$sync1"
+  wait
+  rm -f *.gg *.ga *.gb *_err
+  exit 1
+}
+
+rm -f *.gg *.ga *.gb *_err
+for i in $(seq 1 "$cnt"); do
+  (run_test $i) &
+
+  if (( $i % 4 == 0 )); then wait; fi
+
+  if [[ ! -f "$sync2" ]]; then
+    kill -SIGINT $$
+  fi
+done
+rm -f *.gg *.ga *.gb *_err

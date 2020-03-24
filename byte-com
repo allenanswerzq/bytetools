@@ -111,6 +111,7 @@ trap_ctrlc () {
   if [[ -f std_err ]]; then
     print_stdout std_err
   fi
+  rm -f std_err
   error "Timeout after runnig for ($TIME_LIMITS)s, loop might exist."
   exit 1
 }

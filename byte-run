@@ -38,10 +38,10 @@ for i in $inputs; do
   fi
 
   if ! { bash -c "$cmd"; }; then
-    print_split '-' "debug"
+    error_split '-' "run error"
     print_stdout std_err
     rm -rf std_err
-    error_split '-' "run error"
+    full_error_line '-'
     error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
   fi

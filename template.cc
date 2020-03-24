@@ -10,6 +10,7 @@ using namespace std;
 #define all(x) (x).begin(), (x).end()
 #ifndef LOCAL
 #define trace(...)
+#define xuyixuyi()
 #define debugstream ostream
 #endif
 typedef long long ll;

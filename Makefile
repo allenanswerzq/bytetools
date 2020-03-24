@@ -59,20 +59,14 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG)
 
-# # Compare with random generated input.
-# comp_sample: samples $(ELF)
-# 	@echo byte-test $(ELF)
-# 	@byte-test $(ELF) $(cnts) 2
-
-# Compare with random generated input.
 comp: $(CMP) $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(ELF) $(cnts) 1
+	@byte-test $(cnts)
 
 # Run with random generated input data.
 run: $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(ELF) $(cnts) 0
+	@byte-test $(cnts)
 
 gen: $(GEN)
 	./$(GEN)
