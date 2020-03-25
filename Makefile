@@ -59,7 +59,7 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG)
 
-comp: $(CMP) $(GEN) $(ELF)
+comp: $(GEN) $(ELF)
 	@echo byte-test
 	@byte-test $(cnts)
 
@@ -69,7 +69,7 @@ run: $(GEN) $(ELF)
 	@byte-test $(cnts)
 
 gen: $(GEN)
-	./$(GEN)
+	./$(GEN) 0 #/* generate id */#
 
 memo:
 	ps aux | grep "[.]/$(ELF)$$" | awk '{$$6=int($$6/1024)"M";}{print;}'

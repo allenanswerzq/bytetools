@@ -24,11 +24,18 @@ func ReadFile(name string) []byte {
 }
 
 func WriteFile(name string, data []byte) {
-	err := ioutil.WriteFile(name, data, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
+ 	f, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+  if err != nil {
+    log.Fatal(err)
+  }
+  if _, err := f.Write(data); err != nil {
+    log.Fatal(err)
+  }
+  if err := f.Close(); err != nil {
+    log.Fatal(err)
+  }
 }
+
 
 func FileExist(name string) bool {
 	_, err := os.Stat(name)
@@ -70,6 +77,7 @@ var xy_channel_recv chan bool
 var xy_kill bool = false
 var xy_pass bool = false
 var xy_need_compare = false
+var xy_kthreds int = 4
 var terminal_width int = 0
 
 func DrawSplit(ch string, msg string) {
@@ -104,7 +112,7 @@ func KillIfError(ret bool, stage int, idx int) {
 }
 
 func LogPass(msg string) {
-	printer := color.New(color.FgYellow, color.Bold)
+	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println(msg)
 }
 
@@ -118,29 +126,33 @@ func CleanUp() {
 }
 
 func TestJob(cid int) {
-	chunk := xy_cnts / 4
+	chunk := xy_cnts / xy_kthreds
 	for i := 0; i < chunk; i++ {
 		idx := i + cid*chunk
-		ret := RunCmd(fmt.Sprintf("./%s_ge >%d.gg 2>gen_err_%d", xy, idx, idx))
+		ret := RunCmd(fmt.Sprintf("./%s_ge %d >%d.gg 2>gen_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_GEN, idx)
 		ret = RunCmd(fmt.Sprintf("./%s <%d.gg >%d.ga 2>run_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_RUN, idx)
 		if xy_need_compare {
 			ret = RunCmd(fmt.Sprintf("./%s_mp <%d.gg >%d.gb 2>cmp_err_%d", xy, idx, idx, idx))
 			KillIfError(ret, STAGE_CMP, idx)
+		}
+		run_diff := false
+		if FileExist(fmt.Sprintf("%d.ga", idx)) && FileExist(fmt.Sprintf("%d.gb", idx)) {
+			run_diff = true
 			ret = RunCmd(fmt.Sprintf("diff -y -W 60 %d.ga %d.gb 2>&1 1>dif_err_%d", idx, idx, idx))
 			KillIfError(ret, STAGE_DIF, idx)
 		}
+		xy_done_mutex.Lock()
 		pass := "test..." + fmt.Sprintf("%3d", idx)
 		pass += strings.Repeat(" ", terminal_width-terminal_width*2/3)
 		fmt.Printf(pass)
-		if xy_need_compare {
+		if xy_need_compare || run_diff {
 			pass = "PASS"
 		} else {
-			pass += "RUN"
+			pass = "RUN"
 		}
 		LogPass(pass)
-		xy_done_mutex.Lock()
 		xy_done++
 		if xy_done == xy_cnts {
 			xy_pass = true
@@ -222,6 +234,7 @@ func main() {
 	if len(os.Args) == 3 {
 		if os.Args[1] == "--cnt" {
 			xy_cnts, _ = strconv.Atoi(os.Args[2])
+			xy_cnts = xy_cnts / xy_kthreds * xy_kthreds
 		}
 	}
 
@@ -241,7 +254,7 @@ func main() {
 	xy_channel_send = make(chan bool)
 	xy_channel_recv = make(chan bool)
 	// NOTE: only spwan 4 goroutines to do all the jobs.
-	for i := 0; i < 4; i++ {
+	for i := 0; i < xy_kthreds; i++ {
 		go TestJob(i)
 	}
 	go HandleError()

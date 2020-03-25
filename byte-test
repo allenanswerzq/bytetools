@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-# echo $PWD
 go run $ALGO/bytetools/byte-test.go --cnt $@
+rm -f *.gg *.ga *.gb *_err_*
