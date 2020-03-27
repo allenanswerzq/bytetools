@@ -44,7 +44,7 @@ curdir:
 
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ --std=c++17 $< -I$(ALGOROOT)/third_party/jngen/includes -I$(ALGOROOT) -o $@
+	@$(CXX) -x c++ --std=c++17 -DLOCAL $< -I$(ALGOROOT)/third_party/jngen/includes -I$(ALGOROOT) -o $@
 
 clean:
 	@-rm -rf $(ELF) *_mp *_ge
@@ -69,7 +69,7 @@ run: $(GEN) $(ELF)
 	@byte-test $(cnts)
 
 gen: $(GEN)
-	./$(GEN) 0 #/* generate id */#
+	./$(GEN)
 
 memo:
 	ps aux | grep "[.]/$(ELF)$$" | awk '{$$6=int($$6/1024)"M";}{print;}'

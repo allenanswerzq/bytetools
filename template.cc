@@ -11,10 +11,8 @@ using namespace std;
 #ifndef LOCAL
 #define trace(...)
 #define xuyixuyi()
-#define debugstream ostream
 #endif
 typedef long long ll;
-typedef pair<int, int> pii;
 
 void solve() {
 }

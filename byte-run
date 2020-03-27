@@ -23,7 +23,7 @@ total_cnt=0
 correct_cnt=0
 for i in $inputs; do
   # Print input samples
-  print_split '=' "input ${i%.inp}"
+  print_split '=' "XY ${i%.inp}"
   # full_line '-'
   print_stdout "$i"
 

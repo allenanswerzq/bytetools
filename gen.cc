@@ -5,6 +5,8 @@
 using namespace std;
 #define x first
 #define y second
+#define mt make_tuple
+#define all(x) (x).begin(), (x).end()
 typedef long long ll;
 
 template<class T> void puts(T t) { cout << t << "\n"; }
@@ -17,24 +19,26 @@ void puts(T t, U u, G... g) { cout << t << " "; puts(u, g...); }
 
 int xy = -1;
 
-void WriteFile(const string &name, const string& data) {
-  ofstream ofs(FLAGS_elf + ".in");
+void WriteFile(const string& data) {
+  if (xy == -1) return;
+  ofstream ofs(to_string(xy) + ".gb");
   if (!ofs.is_open()) {
-    LOG_ERRR("File cant open!");
+    assertm(0, "File cant open!");
     exit(1);
   }
   ofs << data << '\n';
   ofs.close();
 }
 
-
 void gen() {
   // Write your own test generating code here.
 }
 
 int main(int argc, char** argv) {
-  assert(argc == 2);
-  xy = atoi(argv[1]);
+  if (argc == 2) {
+    // Let's say we might want to write out a file for comparison.
+    xy = atoi(argv[1]);
+  }
   gen();
   return 0;
 }

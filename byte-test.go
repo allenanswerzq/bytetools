@@ -173,6 +173,7 @@ func HandleError() {
 		xy_channel_recv <- true
 		// log.Printf("Handling...")
 		idx := job_state.idx
+		xy_done_mutex.Lock()
 		if job_state.stage == STAGE_GEN {
 			DrawSplit("-", fmt.Sprintf("generating error %d", idx))
 			DumpStderr(string(ReadFile(fmt.Sprintf("gen_err_%d", idx))))
@@ -195,11 +196,21 @@ func HandleError() {
 		} else if job_state.stage == STAGE_DIF {
 			DrawSplit("-", fmt.Sprintf("diffing error %d", idx))
 			DumpStderr(string(ReadFile(fmt.Sprintf("dif_err_%d", idx))))
-			DrawSplit("-", "")
+			DrawSplit("-", "input")
 			inp := fmt.Sprintf("%d.gg", idx)
 			DumpStderr(string(ReadFile(inp)))
+			data := string(ReadFile(fmt.Sprintf("gen_err_%d", idx)))
+			if len(data) > 0 {
+				DrawSplit("-", "generate info")
+				DumpStderr(data)
+			}
+			data = string(ReadFile(fmt.Sprintf("run_err_%d", idx)))
+			if len(data) > 0 {
+				DrawSplit("-", "running info")
+				DumpStderr(data)
+			}
 			DrawSplit("-", "")
-			data := "\nInput\n" + string(ReadFile(inp)) + "Output\n"
+			data = "\nInput\n" + string(ReadFile(inp)) + "Output\n"
 			data += string(ReadFile(fmt.Sprintf("%d.gb", idx)))
 			WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
 		} else {
