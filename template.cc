@@ -8,10 +8,6 @@ using namespace std;
 #define y second
 #define mt make_tuple
 #define all(x) (x).begin(), (x).end()
-#ifndef LOCAL
-#define trace(...)
-#define xuyixuyi()
-#endif
 typedef long long ll;
 
 void solve() {

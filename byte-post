@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+import sys
+
+FILE_NAME = None
+CC_SUFFIX = ".cc"
+CL_SUFFIX = ".cl"
+
+DEBUGSTREAM = "debugstream"
+DBG = "dbg"
+TRACE = "trace"
+XUYIXUYI = "xuyixuyi"
+
+def check(text, i, word):
+  n, m = len(text), len(word)
+  if n - i < m:
+    return False
+  return text[i : i + m] == word
+
+def main():
+  raw = None
+  with open(FILE_NAME + CC_SUFFIX) as f:
+    raw = f.read()
+
+  n = len(raw)
+  text = ""
+  i = 0
+  while i < n:
+    if check(raw, i, DEBUGSTREAM):
+      # Go back to remove extra chars.
+      j = i
+      while j > 0:
+        if raw[j] == ";":
+          break
+        elif raw[j] == "}":
+          break
+        elif raw[j] == "\n":
+          break
+        j -= 1
+      j = i - j - 1
+      assert j >= 0
+      text = text[0 : len(text) - j]
+
+      # Skip the whole DEBUGSTREAM block code.
+      left = 0
+      seen = False
+      while i < n:
+        if seen and left == 0:
+          # Skip the ending newline char if any.
+          if raw[i] == "\n": i += 1
+          break;
+
+        if check(raw, i, "{"):
+          seen = True
+          left += 1
+        elif check(raw, i, "}"):
+          left -= 1
+
+        i += 1
+
+      if not seen:
+        raise ValueError("Not match a DEBUGSTREAM block.")
+
+    elif check(raw, i, DBG):
+      # DBG keyword will be used like `DBG(xxxxx)`
+      left = 0
+      seen = False
+      j = i + len(DBG) + 1
+      while i < n:
+        if raw[i] == "(":
+          left += 1
+          seen = True
+        elif raw[i] == ")":
+          left -= 1
+
+        if seen and left == 0:
+          # Skip the `)` char.
+          i += 1
+          break
+
+        i += 1
+
+      if not seen:
+        raise ValueError("Not match a DBG block.")
+
+      text += raw[j : i - 1]
+
+    elif check(raw, i, TRACE) or check(raw, i, XUYIXUYI):
+      # Go back to remove extra chars.
+      j = i
+      while j > 0:
+        if raw[j] == ";":
+          break
+        elif raw[j] == "}":
+          break
+        elif raw[j] == "\n":
+          break
+        j -= 1
+      j = i - j - 1
+      assert j >= 0
+      text = text[0 : len(text) - j]
+
+      # Skip the trace or xuyixuyi call
+      left = 0
+      seen = False
+      if check(raw, i, TRACE):
+        j = i + len(TRACE) + 1
+      else:
+        j = i + len(XUYIXUYI) + 1
+      while i < n:
+        if seen and left == 0:
+          assert raw[i] == ";", "Expect the ending of the `trace` be `;`"
+          i += 1
+          # Skip the newline if any
+          if raw[i] == "\n": i += 1
+          break
+
+        if raw[i] == '(':
+          left += 1
+          seen = True
+        elif raw[i] == ')':
+          left -= 1
+
+        i += 1
+
+      if not seen:
+        raise ValueError("Not match a TRACE or XUYIXUYI block.")
+
+      # text += raw[j : i - 1]
+
+    else:
+      text += raw[i]
+      i += 1
+
+  with open(FILE_NAME + CL_SUFFIX, mode="w") as f:
+    f.write(text)
+
+if __name__ == "__main__":
+  if len(sys.argv) < 2:
+    print("No file need to be cleaned, exiting..")
+    exit(0)
+  FILE_NAME = sys.argv[1]
+  main()

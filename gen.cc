@@ -9,14 +9,6 @@ using namespace std;
 #define all(x) (x).begin(), (x).end()
 typedef long long ll;
 
-template<class T> void puts(T t) { cout << t << "\n"; }
-template<class T, class U, class... G>
-void puts(T t, U u, G... g) { cout << t << " "; puts(u, g...); }
-
-#define assertm(exp, msg) assert(((void)msg, exp))
-
-//NOTE: Be aware jngen has its own ostream, need to fix this issue.
-
 int xy = -1;
 
 void WriteFile(const string& data) {
@@ -30,8 +22,9 @@ void WriteFile(const string& data) {
   ofs.close();
 }
 
-void gen() {
-  // Write your own test generating code here.
+// Write your own test generating code here.
+void Generate() {
+
 }
 
 int main(int argc, char** argv) {
@@ -39,6 +32,6 @@ int main(int argc, char** argv) {
     // Let's say we might want to write out a file for comparison.
     xy = atoi(argv[1]);
   }
-  gen();
+  Generate();
   return 0;
 }

@@ -144,7 +144,8 @@ func TestJob(cid int) {
 			KillIfError(ret, STAGE_DIF, idx)
 		}
 		xy_done_mutex.Lock()
-		pass := "test..." + fmt.Sprintf("%3d", idx)
+		xy_done++
+		pass := "test..." + fmt.Sprintf("%3d", xy_done)
 		pass += strings.Repeat(" ", terminal_width-terminal_width*2/3)
 		fmt.Printf(pass)
 		if xy_need_compare || run_diff {
@@ -153,7 +154,6 @@ func TestJob(cid int) {
 			pass = "RUN"
 		}
 		LogPass(pass)
-		xy_done++
 		if xy_done == xy_cnts {
 			xy_pass = true
 		}

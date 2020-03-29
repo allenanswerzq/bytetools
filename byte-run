@@ -88,3 +88,5 @@ if [[ $debug == true ]]; then
   fi
 fi
 
+# Post work to clean up source file for submiting.
+byte-post "$target"
