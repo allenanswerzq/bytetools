@@ -1,7 +1,5 @@
 #include <bits/stdc++.h>
-#include "array.h"
-#include "rnds.h"
-#include "graph.h"
+#include "generator.h"
 using namespace std;
 #define x first
 #define y second

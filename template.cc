@@ -6,7 +6,6 @@
 using namespace std;
 #define x first
 #define y second
-#define mt make_tuple
 #define all(x) (x).begin(), (x).end()
 typedef long long ll;
 

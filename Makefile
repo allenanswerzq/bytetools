@@ -2,7 +2,7 @@ CXX = g++
 SHELL = /bin/bash -o pipefail
 ALGOROOT = ${ALGO}
 
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -O2 -Wshadow -Wformat=2
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -O2 -Wshadow -Wformat=2 -g
 CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconversion
 
 # By default sets to debug mode.
@@ -16,7 +16,8 @@ ifeq ($(DEBUG), 1)
 endif
 
 # For local debug purpose
-CXXFLAGS += -I$(ALGOROOT)
+CXXINCS = -I$(ALGOROOT) -I$(ALGOROOT)/third_party/jngen/includes
+CXXLIBS += -lgvc -lcgraph -lcdt
 ifeq ($(DEBUG), 1)
 	DBGFLAGS += -DLOCAL
 endif
@@ -36,7 +37,7 @@ curdir:
 
 % : %.cc
 	@echo "cxx $<"
-	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@
+	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
 
 %_mp : %.mp
 	@echo "cxx $<"
@@ -44,7 +45,7 @@ curdir:
 
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ --std=c++17 -DLOCAL $< -I$(ALGOROOT)/third_party/jngen/includes -I$(ALGOROOT) -o $@
+	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS)
 
 clean:
 	@-rm -rf $(ELF) *_mp *_ge

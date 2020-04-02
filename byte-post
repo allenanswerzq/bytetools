@@ -36,7 +36,7 @@ def main():
         elif raw[j] == "\n":
           break
         j -= 1
-      j = i - j - 1
+      j = i - j
       assert j >= 0
       text = text[0 : len(text) - j]
 
