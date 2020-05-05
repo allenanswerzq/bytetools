@@ -1,6 +1,5 @@
 /* created   : $DATE
  * accepted  : $ACCEPTED
- * author    : landcold7
  */
 #include <bits/stdc++.h>
 using namespace std;

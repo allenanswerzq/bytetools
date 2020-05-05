@@ -23,7 +23,7 @@ total_cnt=0
 correct_cnt=0
 for i in $inputs; do
   # Print input samples
-  print_split '=' "XY ${i%.inp}"
+  print_color '^' "XY ${i%.inp}"
   # full_line '-'
   print_stdout "$i"
 
@@ -32,9 +32,10 @@ for i in $inputs; do
   out="${i%.inp}".out
   rel="${i%.inp}".rel
   if [[ $debug == true ]]; then
-    cmd="$timeout -s2 $TIME_LIMITS ./$target < $i >$out 2>std_err"
+    # Kill(9) after TIME_LIMITS seconds past.
+    cmd="$timeout -s9 $TIME_LIMITS ./$target < $i >$out 2>std_err"
   else
-    cmd="$timeout -s2 $TIME_LIMITS time ./$target < $i >$out 2>std_err"
+    cmd="$timeout -s9 $TIME_LIMITS time ./$target < $i >$out 2>std_err"
   fi
 
   if ! { bash -c "$cmd"; }; then

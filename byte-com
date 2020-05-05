@@ -74,6 +74,17 @@ error_split() {
   printf '%*s\e[m\n' "$half" | tr ' ' "$ch"
 }
 
+print_color() {
+  ch=$1
+  msg=" $2 "
+  tot=$WIDTH
+  len=$(echo -n "$msg" | wc -m)
+  half=$(echo "($tot - $len) / 2" | bc)
+  printf '\e[1;36m%*s' "$half" | tr ' ' "$ch"
+  printf "$msg"
+  printf '%*s\e[m\n' "$half" | tr ' ' "$ch"
+}
+
 print_stdout() {
   local chars=$(cat $1 | wc -c)
   local raw=$(cat $1 | sed 's/    / /g')

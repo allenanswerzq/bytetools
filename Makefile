@@ -9,6 +9,8 @@ CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconve
 DEBUG ?= 1
 ifeq ($(DEBUG), 1)
 	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover
+	# For drmemory usage
+	DBGFLAGS += -fno-inline -fno-omit-frame-pointer
 	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
@@ -17,7 +19,7 @@ endif
 
 # For local debug purpose
 CXXINCS = -I$(ALGOROOT) -I$(ALGOROOT)/third_party/jngen/includes
-CXXLIBS += -lgvc -lcgraph -lcdt
+# CXXLIBS += -lgvc -lcgraph -lcdt
 ifeq ($(DEBUG), 1)
 	DBGFLAGS += -DLOCAL
 endif
@@ -62,12 +64,12 @@ test: samples $(ELF)
 
 comp: $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(cnts)
+	@byte-test $(cnts) $(log)
 
 # Run with random generated input data.
 run: $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(cnts)
+	@byte-test $(cnts) $(log)
 
 gen: $(GEN)
 	./$(GEN)

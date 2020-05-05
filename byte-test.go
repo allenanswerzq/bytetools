@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+	"runtime"
 )
 
 func ReadFile(name string) []byte {
@@ -43,7 +44,7 @@ func FileExist(name string) bool {
 }
 
 func RunCmd(str string, dry_run ...bool) bool {
-	str = "gtimeout -s2 5 " + str
+	str = xy_timeout + " -s9 5 " + str
 	if len(dry_run) == 0 {
 		cmd := exec.Command("sh", "-c", str)
 		err := cmd.Run()
@@ -77,7 +78,9 @@ var xy_channel_recv chan bool
 var xy_kill bool = false
 var xy_pass bool = false
 var xy_need_compare = false
+var xy_timeout string
 var xy_kthreds int = 4
+var xy_keep_log bool = false
 var terminal_width int = 0
 
 func DrawSplit(ch string, msg string) {
@@ -122,6 +125,9 @@ func LogFailure(msg string) {
 }
 
 func CleanUp() {
+	if xy_keep_log {
+		return
+	}
 	RunCmd("rm -f *.gg *.gb *.ga *_err_*")
 }
 
@@ -242,11 +248,17 @@ func GetWidth() int {
 }
 
 func main() {
-	if len(os.Args) == 3 {
+	// Usage: byte-test --cnt 10 "any"
+	if len(os.Args) >= 3 {
 		if os.Args[1] == "--cnt" {
 			xy_cnts, _ = strconv.Atoi(os.Args[2])
 			xy_cnts = xy_cnts / xy_kthreds * xy_kthreds
 		}
+	}
+	if len(os.Args) >= 4 {
+		// TODO(zq): make this a more precise control.
+		xy_keep_log = true
+		fmt.Println("run and keep log")
 	}
 
 	// Get the current directory name
@@ -259,6 +271,13 @@ func main() {
 
 	if FileExist(xy + "_mp") {
 		xy_need_compare = true
+	}
+
+	// Chose the correct timeout command to use.
+	if runtime.GOOS == "linux" {
+		xy_timeout = "timeout"
+	} else {
+		xy_timeout = "gtimeout"
 	}
 
 	CleanUp()
