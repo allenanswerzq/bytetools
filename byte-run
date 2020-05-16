@@ -70,7 +70,8 @@ for i in $inputs; do
       else
         error_right "Failed"
         error_split '-' "compare"
-        diff -y -W $WIDTH "$out" "$rel" || true
+        width=$((WIDTH / 2 / 8 + 2))
+        byte-diff "$out" "$rel" "$WIDTH" || true
       fi
     else
       correct_cnt=$((correct_cnt + 1))

@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+import sys
+
+
+def diff(f1, f2, width):
+  with open(f1, "r") as f:
+    d1 = f.read().split('\n')
+
+  with open(f2, "r") as f:
+    d2 = f.read().split('\n')
+
+  mx = 0
+  for a, b in zip(d1, d2):
+    mx = max(len(a), mx)
+
+  x = int(width) * 5 // 4 // 2
+  out = []
+  assert x > mx
+  for a, b in zip(d1, d2):
+    if a == b:
+      a = a + (x - len(a)) * ' ' + b
+    else:
+      t = mx + (x - mx) // 2
+      a = a + (t - len(a)) * ' ' + '|'
+      assert x > len(a)
+      a += (x - len(a)) * ' '
+      a += b
+    print(a);
+
+if __name__ == "__main__":
+  if len(sys.argv) < 4:
+    print("Usage: pydiff file1 file2 witdh")
+    exit(0)
+  diff(sys.argv[1], sys.argv[2], sys.argv[3])
