@@ -2,27 +2,26 @@ CXX = g++-9
 SHELL = /bin/bash -o pipefail
 ALGOROOT = ${ALGO}
 
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -O2 -Wshadow -Wformat=2 -g
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -Wshadow -Wformat=2
 CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconversion
 
 # By default sets to debug mode.
 DEBUG ?= 1
 ifeq ($(DEBUG), 1)
-	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover
-	# For drmemory usage
-	DBGFLAGS += -fno-inline -fno-omit-frame-pointer
+	CXXFLAGS += -O0
+	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g
+	DBGFLAGS += -DLOCAL
 	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
 	# -fstack-protector
+else
+	CXXFLAGS += -O2
 endif
 
 # For local debug purpose
 CXXINCS = -I$(ALGOROOT) -I$(ALGOROOT)/third_party/jngen/includes
 # CXXLIBS += -lgvc -lcgraph -lcdt
-ifeq ($(DEBUG), 1)
-	DBGFLAGS += -DLOCAL
-endif
 
 # byte-test config
 cnts ?= 10
