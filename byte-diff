@@ -16,7 +16,10 @@ def diff(f1, f2, width):
   x = int(width) * 5 // 4 // 2
   out = []
   assert x > mx
-  for a, b in zip(d1, d2):
+  size = max(len(d1), len(d2))
+  for i in range(size):
+    a = a[i] if i < len(d1) else ""
+    b = b[i] if i < len(d2) else ""
     if a == b:
       a = a + (x - len(a)) * ' ' + b
     else:

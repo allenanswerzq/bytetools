@@ -7,7 +7,7 @@ using namespace std;
 #define x first
 #define y second
 #define all(x) (x).begin(), (x).end()
-typedef long long ll;
+#define ll long long
 
 void solve() {
 }
