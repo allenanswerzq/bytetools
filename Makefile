@@ -87,8 +87,9 @@ run: $(GEN) $(ELF)
 gen: $(GEN)
 	./$(GEN)
 
-memo:
-	ps aux | grep "[.]/$(ELF)$$" | awk '{$$6=int($$6/1024)"M";}{print;}'
+memory: $(ELF)
+	@echo byte-memory
+	@byte-memory $(ELF)
 
 .PHONY: all clean run test comp run
 

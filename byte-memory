@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+target="$1"
+./$target < 0.inp &
+sleep 1
+ps aux | grep "[.]/$target" | awk '{$6=int($6/1024)"M";}{print $6;}'
+killall $target
