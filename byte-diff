@@ -18,8 +18,8 @@ def diff(f1, f2, width):
   assert x > mx
   size = max(len(d1), len(d2))
   for i in range(size):
-    a = a[i] if i < len(d1) else ""
-    b = b[i] if i < len(d2) else ""
+    a = d1[i] if i < len(d1) else ""
+    b = d2[i] if i < len(d2) else ""
     if a == b:
       a = a + (x - len(a)) * ' ' + b
     else:

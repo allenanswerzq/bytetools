@@ -24,7 +24,7 @@ CXXINCS = -I$(ALGOROOT) -I$(ALGOROOT)/third_party/jngen/includes
 # CXXLIBS += -lgvc -lcgraph -lcdt
 
 # byte-test config
-cnts ?= 10
+CNT ?= 4
 
 ELF := $(notdir $(CURDIR))
 CMP := $(ELF)_mp
@@ -36,9 +36,20 @@ all: curdir test
 curdir:
 	@echo $(CURDIR)
 
+ifeq ($(DEBUG), 1)
 % : %.cc
 	@echo "cxx $<"
 	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
+else
+% : %.cl
+	@echo "cxx $<"
+	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
+endif
+
+%.cl : %.cc
+	@echo "byte-post"
+	@byte-post $(ELF)
+	@pbcopy < $(ELF).cl && pbpaste 2>&1 >/dev/null
 
 %_mp : %.mp
 	@echo "cxx $<"
@@ -50,6 +61,9 @@ curdir:
 
 clean:
 	@-rm -rf $(ELF) *_mp *_ge
+
+deepclean: clean
+	@-rm -rf *.gg *.ga *.gb *_err_* *.gi
 
 samples: clean
 	@rm -rf *.inp
@@ -63,12 +77,12 @@ test: samples $(ELF)
 
 comp: $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(cnts) $(log)
+	@byte-test $(CNT) $(LOG)
 
 # Run with random generated input data.
 run: $(GEN) $(ELF)
 	@echo byte-test
-	@byte-test $(cnts) $(log)
+	@byte-test $(CNT) $(LOG)
 
 gen: $(GEN)
 	./$(GEN)

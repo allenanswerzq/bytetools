@@ -87,7 +87,7 @@ print_color() {
 
 print_stdout() {
   local chars=$(cat $1 | wc -c)
-  local raw=$(cat $1 | sed 's/    / /g')
+  local raw=$(tr -d '\0' <$1 | sed 's/    / /g')
   # if [[ chars -ge 1000 ]]; then
   #   raw="$(head -c 1000 $1)......(too long ignored)......"
   # fi

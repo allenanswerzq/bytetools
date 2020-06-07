@@ -25,7 +25,9 @@ for i in $inputs; do
   # Print input samples
   print_color '^' "XY ${i%.inp}"
   # full_line '-'
-  print_stdout "$i"
+  if [[ $debug == true ]]; then
+    print_stdout "$i"
+  fi
 
   # run: .inp --> .out
   # dif: .out --> .rel
@@ -78,6 +80,9 @@ for i in $inputs; do
       error_right "Custom"
     fi
   fi
+  if [[ $debug != true ]]; then
+    echo -e "\n"
+  fi
 done
 
 print_split '=' "done"
@@ -92,3 +97,4 @@ fi
 
 # Post work to clean up source file for submiting.
 byte-post "$target"
+pbcopy < "$target.cl" && pbpaste 2>&1 >/dev/null

@@ -45,6 +45,9 @@ func FileExist(name string) bool {
 
 func RunCmd(str string, dry_run ...bool) bool {
 	str = xy_timeout + " -s9 5 " + str
+	if xy_keep_log {
+		fmt.Println("[byte-test] " + str)
+	}
 	if len(dry_run) == 0 {
 		cmd := exec.Command("sh", "-c", str)
 		err := cmd.Run()
@@ -60,6 +63,7 @@ func RunCmd(str string, dry_run ...bool) bool {
 type JobState struct {
 	stage int
 	idx   int
+	cmd string
 	mutex sync.Mutex
 }
 
@@ -81,6 +85,7 @@ var xy_need_compare = false
 var xy_timeout string
 var xy_kthreds int = 4
 var xy_keep_log bool = false
+var xy_failed_cases []int
 var terminal_width int = 0
 
 func DrawSplit(ch string, msg string) {
@@ -121,26 +126,31 @@ func LogPass(msg string) {
 
 func LogFailure(msg string) {
 	printer := color.New(color.FgRed, color.Bold)
-	printer.Println(msg)
+	printer.Println("[byte-test] " + msg)
+}
+
+func LogInfo(msg string) {
+	printer := color.New(color.FgBlue, color.Bold)
+	printer.Println("[byte-test] " + msg)
 }
 
 func CleanUp() {
 	if xy_keep_log {
 		return
 	}
-	RunCmd("rm -f *.gg *.gb *.ga *_err_*")
+	RunCmd("rm -f *.gi *.gb *.ga *_err_*")
 }
 
 func TestJob(cid int) {
 	chunk := xy_cnts / xy_kthreds
 	for i := 0; i < chunk; i++ {
 		idx := i + cid*chunk
-		ret := RunCmd(fmt.Sprintf("./%s_ge %d >%d.gg 2>gen_err_%d", xy, idx, idx, idx))
+		ret := RunCmd(fmt.Sprintf("./%s_ge %d >%d.gi 2>gen_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_GEN, idx)
-		ret = RunCmd(fmt.Sprintf("./%s <%d.gg >%d.ga 2>run_err_%d", xy, idx, idx, idx))
+		ret = RunCmd(fmt.Sprintf("./%s <%d.gi >%d.ga 2>run_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_RUN, idx)
 		if xy_need_compare {
-			ret = RunCmd(fmt.Sprintf("./%s_mp <%d.gg >%d.gb 2>cmp_err_%d", xy, idx, idx, idx))
+			ret = RunCmd(fmt.Sprintf("./%s_mp <%d.gi >%d.gb 2>cmp_err_%d", xy, idx, idx, idx))
 			KillIfError(ret, STAGE_CMP, idx)
 		}
 		run_diff := false
@@ -181,42 +191,50 @@ func HandleError() {
 		idx := job_state.idx
 		xy_done_mutex.Lock()
 		if job_state.stage == STAGE_GEN {
-			DrawSplit("-", fmt.Sprintf("generating error %d", idx))
-			DumpStderr(string(ReadFile(fmt.Sprintf("gen_err_%d", idx))))
-			DrawSplit("-", "")
+			xy_failed_cases = append(xy_failed_cases, idx);
+			LogInfo(fmt.Sprintf("generating error %d", idx));
+			// DrawSplit("-", fmt.Sprintf("generating error %d", idx))
+			// DumpStderr(string(ReadFile(fmt.Sprintf("gen_err_%d", idx))))
+			// DrawSplit("-", "")
 		} else if job_state.stage == STAGE_RUN {
-			DrawSplit("-", fmt.Sprintf("running error %d", idx))
-			DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
-			DrawSplit("-", "")
-			inp := fmt.Sprintf("%d.gg", idx)
-			DumpStderr(string(ReadFile(inp)))
-			DrawSplit("-", "")
+			xy_failed_cases = append(xy_failed_cases, idx);
+			LogInfo(fmt.Sprintf("running error %d", idx));
+			// DrawSplit("-", fmt.Sprintf("running error %d", idx))
+			// DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
+			// DrawSplit("-", "")
+			inp := fmt.Sprintf("%d.gi", idx)
+			// DumpStderr(string(ReadFile(inp)))
+			// DrawSplit("-", "")
 			data := "\n" + string(ReadFile(inp))
 			WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
 		} else if job_state.stage == STAGE_CMP {
-			DrawSplit("-", fmt.Sprintf("comparing error %d", idx))
-			DumpStderr(string(ReadFile(fmt.Sprintf("cmp_err_%d", idx))))
-			DrawSplit("-", "")
-			DumpStderr(string(ReadFile(fmt.Sprintf("%d.gg", idx))))
-			DrawSplit("-", "")
+			xy_failed_cases = append(xy_failed_cases, idx);
+			LogInfo(fmt.Sprintf("comparing error %d", idx));
+			// DrawSplit("-", fmt.Sprintf("comparing error %d", idx))
+			// DumpStderr(string(ReadFile(fmt.Sprintf("cmp_err_%d", idx))))
+			// DrawSplit("-", "")
+			// DumpStderr(string(ReadFile(fmt.Sprintf("%d.gi", idx))))
+			// DrawSplit("-", "")
 		} else if job_state.stage == STAGE_DIF {
-			DrawSplit("-", fmt.Sprintf("diffing error %d", idx))
-			DumpStderr(string(ReadFile(fmt.Sprintf("dif_err_%d", idx))))
-			DrawSplit("-", "input")
-			inp := fmt.Sprintf("%d.gg", idx)
-			DumpStderr(string(ReadFile(inp)))
-			data := string(ReadFile(fmt.Sprintf("gen_err_%d", idx)))
-			if len(data) > 0 {
-				DrawSplit("-", "generate info")
-				DumpStderr(data)
-			}
-			data = string(ReadFile(fmt.Sprintf("run_err_%d", idx)))
-			if len(data) > 0 {
-				DrawSplit("-", "running info")
-				DumpStderr(data)
-			}
-			DrawSplit("-", "")
-			data = "\nInput\n" + string(ReadFile(inp)) + "Output\n"
+			LogInfo(fmt.Sprintf("diffing error %d", idx));
+			xy_failed_cases = append(xy_failed_cases, idx);
+			// DrawSplit("-", fmt.Sprintf("diffing error %d", idx))
+			// DumpStderr(string(ReadFile(fmt.Sprintf("dif_err_%d", idx))))
+			// DrawSplit("-", "input")
+			inp := fmt.Sprintf("%d.gi", idx)
+			// // DumpStderr(string(ReadFile(inp)))
+			// data := string(ReadFile(fmt.Sprintf("gen_err_%d", idx)))
+			// if len(data) > 0 {
+			// 	DrawSplit("-", "generate info")
+			// 	DumpStderr(data)
+			// }
+			// data = string(ReadFile(fmt.Sprintf("run_err_%d", idx)))
+			// if len(data) > 0 {
+			// 	DrawSplit("-", "running info")
+			// 	DumpStderr(data)
+			// }
+			// DrawSplit("-", "")
+			data := "\nInput\n" + string(ReadFile(inp)) + "Output\n"
 			data += string(ReadFile(fmt.Sprintf("%d.gb", idx)))
 			WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
 		} else {
@@ -290,7 +308,11 @@ func main() {
 	go HandleError()
 	for {
 		if xy_kill {
-			LogFailure("\nSOME TESTS FAILED.")
+			// LogFailure("\nSOME TESTS FAILED.")
+			fmt.Printf("\n")
+			for _, v := range xy_failed_cases {
+				LogFailure(fmt.Sprintf("Tests: %d FAILED.", v));
+			}
 			CleanUp()
 			os.Exit(1)
 		}

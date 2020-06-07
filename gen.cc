@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "generator.h"
+#include "array.h"
 using namespace std;
 #define x first
 #define y second
@@ -27,7 +27,7 @@ void Generate() {
 
 int main(int argc, char** argv) {
   if (argc == 2) {
-    // Let's say we might want to write out a file for comparison.
+    // Used to write out a file for comparison.
     xy = atoi(argv[1]);
   }
   Generate();
