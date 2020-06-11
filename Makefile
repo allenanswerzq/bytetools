@@ -75,7 +75,7 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG)
 
-comp: $(GEN) $(ELF)
+comp: $(GEN) $(CMP)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 

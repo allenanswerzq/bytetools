@@ -4,7 +4,6 @@ import sys
 import copy
 import signal
 from pathlib import Path
-
 INPUT_SIGN = "nput"
 OUTPUT_SIGN = "utput"
 INPUT_SUFX = ".inp"
@@ -152,4 +151,10 @@ if __name__ == "__main__":
     print("No file need to parse, exiting..")
     exit(0)
   INPUT_FILE = sys.argv[1]
+  with open(INPUT_FILE, 'r') as f:
+    texts = f.read()
+    if "输入" in texts:
+      INPUT_SIGN = "输入"
+      OUTPUT_SIGN = "输出"
   parse(sys.argv[1])
+
