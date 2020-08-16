@@ -9,9 +9,11 @@ source "$CURRENT_DIR/byte-com"
 trap "trap_ctrlc" 2
 
 debug=true
+log=true
 target="$1"
 inputs="$(ls *.inp | sort -g)"
 if [[ "$2" == "0" ]]; then debug=false; fi
+if [[ "$3" == "0" ]]; then log=false; fi
 
 test_cnt="$(ls *.inp | wc -l)"
 for i in $(seq "$test_cnt" 100); do
@@ -25,7 +27,7 @@ for i in $inputs; do
   # Print input samples
   print_color '^' "XY ${i%.inp}"
   # full_line '-'
-  if [[ $debug == true ]]; then
+  if [[ $debug == true && $log == true ]]; then
     print_stdout "$i"
   fi
 
@@ -49,7 +51,7 @@ for i in $inputs; do
     exit 1
   fi
 
-  if [[ $debug == true ]]; then
+  if [[ $debug == true && $log == true ]]; then
     print_split '-' "debug"
     print_stdout std_err
     rm -rf std_err

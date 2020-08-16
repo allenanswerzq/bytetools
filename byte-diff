@@ -15,7 +15,7 @@ def diff(f1, f2, width):
 
   x = int(width) * 5 // 4 // 2
   out = []
-  assert x > mx
+  # assert x > mx
   size = max(len(d1), len(d2))
   for i in range(size):
     a = d1[i] if i < len(d1) else ""
@@ -25,7 +25,7 @@ def diff(f1, f2, width):
     else:
       t = mx + (x - mx) // 2
       a = a + (t - len(a)) * ' ' + '|'
-      assert x > len(a)
+      # assert x > len(a)
       a += (x - len(a)) * ' '
       a += b
     print(a);

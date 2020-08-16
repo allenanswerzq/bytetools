@@ -7,9 +7,10 @@ CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconve
 
 # By default sets to debug mode.
 DEBUG ?= 1
+RLOG ?= 1
 ifeq ($(DEBUG), 1)
-	CXXFLAGS += -O0
-	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g
+	CXXFLAGS += -O2
+	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g -fmax-errors=2
 	DBGFLAGS += -DLOCAL
 	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
@@ -31,7 +32,13 @@ CMP := $(ELF)_mp
 GEN := $(ELF)_ge
 INP := $(ELF).in
 
-all: curdir test
+all: curdir help test
+
+help:
+	@echo "Usage:                       "
+	@echo "   make       DEBUG=0 RLOG=0 "
+	@echo "   bmk        DEBUG=0 RLOG=0 "
+	@echo "   byte-test  CNT=4 LOG=0    "
 
 curdir:
 	@echo $(CURDIR)
@@ -73,7 +80,7 @@ samples: clean
 # Run with sample input.
 test: samples $(ELF)
 	@echo byte-run $(ELF)
-	@byte-run $(ELF) $(DEBUG)
+	@byte-run $(ELF) $(DEBUG) $(RLOG)
 
 comp: $(GEN) $(CMP)
 	@echo byte-test

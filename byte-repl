@@ -13,6 +13,10 @@ trap 'trap_repl' 2
 
 prb="$1"
 cmd="make"
+if [[ $# > 1 ]]; then
+  shift 1
+  cmd="make $@"
+fi
 while true ; do
   clear && tmux clear-history
   ctime=$(date "+%Y-%m-%d %H:%M:%S")
