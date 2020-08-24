@@ -11,21 +11,21 @@ trap "trap_ctrlc" 2
 debug=true
 log=true
 target="$1"
-inputs="$(ls *.inp | sort -g)"
+inputs="$(ls *.in | sort -g)"
 if [[ "$2" == "0" ]]; then debug=false; fi
 if [[ "$3" == "0" ]]; then log=false; fi
 
-test_cnt="$(ls *.inp | wc -l)"
+test_cnt="$(ls *.in | wc -l)"
 for i in $(seq "$test_cnt" 100); do
   rm -f "$i.out"
-  rm -f "$i.rel"
+  rm -f "$i.res"
 done
 
 total_cnt=0
 correct_cnt=0
 for i in $inputs; do
   # Print input samples
-  print_color '^' "XY ${i%.inp}"
+  print_color '^' "XY ${i%.in}"
   # full_line '-'
   if [[ $debug == true && $log == true ]]; then
     print_stdout "$i"
@@ -33,8 +33,8 @@ for i in $inputs; do
 
   # run: .inp --> .out
   # dif: .out --> .rel
-  out="${i%.inp}".out
-  rel="${i%.inp}".rel
+  out="${i%.in}".res
+  rel="${i%.in}".out
   if [[ $debug == true ]]; then
     # Kill(9) after TIME_LIMITS seconds past.
     cmd="$timeout -s9 $TIME_LIMITS ./$target < $i >$out 2>std_err"
@@ -65,22 +65,22 @@ for i in $inputs; do
     rm -rf std_err
   fi
 
-  if [[ $debug == true ]]; then
-    total_cnt=$((total_cnt + 1))
-    if [[ -e "$rel" ]]; then
-      if diff -y "$out" "$rel" >/dev/null 2>&1; then
-        correct_cnt=$((correct_cnt + 1))
-        pass_right "PASSED"
-      else
-        error_right "Failed"
+  total_cnt=$((total_cnt + 1))
+  if [[ -e "$rel" ]]; then
+    if diff -y "$out" "$rel" >/dev/null 2>&1; then
+      correct_cnt=$((correct_cnt + 1))
+      pass_right "PASSED"
+    else
+      error_right "Failed"
+      if [[ $log == true ]]; then
         error_split '-' "compare"
         width=$((WIDTH / 2 / 8 + 2))
         byte-diff "$out" "$rel" "$WIDTH" || true
       fi
-    else
-      correct_cnt=$((correct_cnt + 1))
-      error_right "Custom"
     fi
+  else
+    correct_cnt=$((correct_cnt + 1))
+    error_right "Custom"
   fi
   if [[ $debug != true ]]; then
     echo -e "\n"

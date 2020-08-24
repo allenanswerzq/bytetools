@@ -60,9 +60,9 @@ cp "$PRB_MKF" "$problem/Makefile"
 echo "==> Problem $problem created."
 
 cd $problem
-inp="$prb.in"
+inp="$prb.ii"
 src="$prb.cc"
-touch "$inp" && echo "dummy stuff" > "$inp"
+touch "$inp" && echo "null" > "$inp"
 subl "$inp"
 # Sleep for a while so that the sublime plugin can work
 # to put the newly created file at the most right tab.

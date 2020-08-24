@@ -5,7 +5,7 @@ source "$CURRENT_DIR/byte-com"
 cnt=1
 trap_repl () {
   error "Caught ctrlc $cnt"
-  test $cnt -ge 10 && pass "Exiting $prb..." && exit 0
+  test $cnt -ge 4 && pass "Exiting $prb..." && exit 0
   ((++cnt))
 }
 

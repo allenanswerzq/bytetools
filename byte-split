@@ -6,8 +6,8 @@ import signal
 from pathlib import Path
 INPUT_SIGN = "nput"
 OUTPUT_SIGN = "utput"
-INPUT_SUFX = ".inp"
-OUTPUT_SUFX = ".rel"
+INPUT_SUFX = ".in"
+OUTPUT_SUFX = ".out"
 INPUT_FILE = "tests.in"
 customs = []
 inputs = []
