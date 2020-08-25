@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-
 go run $ALGO/bytetools/byte-test.go --cnt $@
 
 # If we want to keep the running log.
-if (( $# == 2 )); then exit 0; fi
+if (( $# == 2 )) && [[ "$2" == 1 ]]; then exit 0; fi
 
 # Otherwise remove all
 rm -f *.gg *.ga *.gb *_err_* *.gi

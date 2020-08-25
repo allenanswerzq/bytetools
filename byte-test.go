@@ -236,7 +236,7 @@ func HandleError() {
 			// DrawSplit("-", "")
 			data := "\nInput\n" + string(ReadFile(inp)) + "Output\n"
 			data += string(ReadFile(fmt.Sprintf("%d.gb", idx)))
-			WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
+			WriteFile(fmt.Sprintf("%s.ii", xy), []byte(data))
 		} else {
 			log.Fatal()
 		}
@@ -274,9 +274,11 @@ func main() {
 		}
 	}
 	if len(os.Args) >= 4 {
-		// TODO(zq): make this a more precise control.
-		xy_keep_log = true
-		fmt.Println("run and keep log")
+		val, _ := strconv.Atoi(os.Args[3])
+		if val > 0 {
+			xy_keep_log = true
+			fmt.Println("run and keep log")
+		}
 	}
 
 	// Get the current directory name

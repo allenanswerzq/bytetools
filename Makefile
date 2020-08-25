@@ -39,6 +39,10 @@ help:
 	@echo "   make       DEBUG=0 RLOG=0 "
 	@echo "   bmk        DEBUG=0 RLOG=0 "
 	@echo "   byte-test  CNT=4 LOG=0    "
+	@echo "   bsc  			 generate compare file"
+	@echo "   bsg  			 generate random tests"
+	@echo "   make comp DEBUG=0 LOG=1 CNT=4 do compare"
+
 
 curdir:
 	@echo $(CURDIR)
@@ -82,7 +86,7 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG) $(RLOG)
 
-comp: $(GEN) $(CMP)
+comp: deepclean $(ELF) $(GEN) $(CMP)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 
