@@ -3,8 +3,6 @@
  */
 #include <bits/stdc++.h>
 using namespace std;
-#define x first
-#define y second
 #define all(x) (x).begin(), (x).end()
 #define ll long long
 

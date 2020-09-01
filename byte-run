@@ -27,7 +27,7 @@ for i in $inputs; do
   # Print input samples
   print_color '^' "XY ${i%.in}"
   # full_line '-'
-  if [[ $debug == true && $log == true ]]; then
+  if [[ $debug == true || $log == true ]]; then
     print_stdout "$i"
   fi
 
@@ -51,10 +51,12 @@ for i in $inputs; do
     exit 1
   fi
 
-  if [[ $debug == true && $log == true ]]; then
+  if [[ $debug == true ]]; then
     print_split '-' "debug"
     print_stdout std_err
-    rm -rf std_err
+  fi
+
+  if [[ $debug == true || $log == true ]]; then
     print_split '-' "output"
     cat "$out"
   fi
