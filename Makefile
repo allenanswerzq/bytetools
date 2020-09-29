@@ -9,9 +9,14 @@ CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconve
 # By default sets to debug mode.
 DEBUG ?= 1
 RLOG ?= 1
-ifeq ($(DEBUG), 1)
-	CXXFLAGS += -O2
+GDB ?= 0
+ifeq ($(GDB), 1)
+	CXXFLAGS += -O0 -g
 	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g -fmax-errors=2
+	DBGFLAGS += -DLOCAL
+else ifeq ($(DEBUG), 1)
+	CXXFLAGS += -O2
+	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fmax-errors=2
 	DBGFLAGS += -DLOCAL
 	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
@@ -97,7 +102,7 @@ clean:
 
 #-------------------------------------------------------------------------------
 deepclean: clean
-	@-rm -rf *.gg *.ga *.gb *_err_* *.gi
+	@-rm -rf *.gg *.ga *.gb *_err_* *.gi std_err
 
 #-------------------------------------------------------------------------------
 samples: clean
