@@ -2,23 +2,17 @@ CXX = g++
 SHELL = /bin/bash -o pipefail
 ALGOROOT = ${ALGO}
 
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++17 -Wshadow -Wformat=2
-CXXFLAGS += -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconversion
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++14 -Wshadow -Wformat=2 -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconversion
 
 #-------------------------------------------------------------------------------
 # By default sets to debug mode.
 DEBUG ?= 1
 RLOG ?= 1
-GDB ?= 1
-ifeq ($(GDB), 1)
+ifeq ($(DEBUG), 1)
 	CXXFLAGS += -O0 -g
 	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g -fmax-errors=2
 	DBGFLAGS += -DLOCAL
-else ifeq ($(DEBUG), 1)
-	CXXFLAGS += -O2
-	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fmax-errors=2
-	DBGFLAGS += -DLOCAL
-	# DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
+  DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
 	# -fstack-protector
