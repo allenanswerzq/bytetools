@@ -139,4 +139,5 @@ if __name__ == "__main__":
     print("No file need to be cleaned, exiting..")
     exit(0)
   FILE_NAME = sys.argv[1]
+  if "_mp" in FILE_NAME: exit(1)
   main()

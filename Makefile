@@ -2,17 +2,32 @@ CXX = g++
 SHELL = /bin/bash -o pipefail
 ALGOROOT = ${ALGO}
 
-CXXFLAGS = -Wall -Wextra -pedantic -std=c++14 -Wshadow -Wformat=2 -Wfloat-equal -Wcast-qual -Wcast-align -fvisibility=hidden # -Wconversion
+CXXFLAGS =
+CXXFLAGS += -Wall
+CXXFLAGS += -Wextra
+CXXFLAGS += -pedantic
+CXXFLAGS += -std=c++14
+CXXFLAGS += -Wshadow
+CXXFLAGS += -Wformat=2
+CXXFLAGS += -Wfloat-equal
+CXXFLAGS += -Wcast-qual
+CXXFLAGS += -Wcast-align
+CXXFLAGS += -fvisibility=hidden
+# CXXFLAGS += -Wconversion
 
 #-------------------------------------------------------------------------------
 # By default sets to debug mode.
 DEBUG ?= 1
 RLOG ?= 1
 ifeq ($(DEBUG), 1)
-	CXXFLAGS += -O0 -g
-	DBGFLAGS += -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -g -fmax-errors=2
+	CXXFLAGS += -O0
+	DBGFLAGS += -g
+	DBGFLAGS += -fsanitize=address
+	DBGFLAGS += -fsanitize=undefined
+	DBGFLAGS += -fno-sanitize-recover
 	DBGFLAGS += -DLOCAL
-  DBGFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
+  DBGFLAGS += -D_GLIBCXX_DEBUG
+  DBGFLAGS += -D_GLIBCXX_DEBUG_PEDANTIC
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
 	# -fstack-protector
@@ -22,8 +37,10 @@ endif
 
 #-------------------------------------------------------------------------------
 # For local debug purpose
-CXXINCS = -I$(ALGOROOT) -I$(ALGOROOT)/third_party/jngen/includes
-# CXXLIBS += -lgvc -lcgraph -lcdt
+CXXINCS =
+CXXFLAGS += -I$(ALGOROOT)
+CXXFLAGS += -I$(ALGOROOT)/third_party/jngen/includes
+CXXLIBS += -lgvc -lcgraph -lcdt
 
 # byte-test config
 CNT ?= 4
@@ -60,6 +77,7 @@ curdir: accpected_time
 #-------------------------------------------------------------------------------
 ifeq ($(DEBUG), 1)
 % : %.cc
+<<<<<<< HEAD
 	@echo "[debug -O0] cxx $<"
 	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
 else
@@ -67,6 +85,9 @@ else
 	@echo "[release -O2] cxx $<"
 	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
 endif
+=======
+	$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
+>>>>>>> d4ae663 (Update)
 
 #-------------------------------------------------------------------------------
 %.cl : %.cc
@@ -113,8 +134,16 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG) $(RLOG)
 
+<<<<<<< HEAD
 #-------------------------------------------------------------------------------
 compare: deepclean $(ELF) $(GEN) $(CMP)
+=======
+somp: samples $(CMP)
+	@echo byte-test
+	@byte-run $(CMP) $(DEBUG) $(RLOG)
+
+comp: deepclean $(ELF) $(GEN) $(CMP)
+>>>>>>> d4ae663 (Update)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 

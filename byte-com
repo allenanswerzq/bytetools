@@ -86,11 +86,13 @@ print_color() {
 }
 
 print_stdout() {
-  local chars=$(cat $1 | wc -c)
-  local raw=$(tr -d '\0' <$1 | sed 's/    / /g')
-  # if [[ chars -ge 1000 ]]; then
-  #   raw="$(head -c 1000 $1)......(too long ignored)......"
-  # fi
+  local line=$(cat $1 | wc -l)
+  local raw=$(tr -d '\0' <$1)
+  if [[ ! -z "$2" ]]; then
+    if [[ line -ge 20 ]]; then
+      raw="$(head -n 20 $1)......(too long ignored)......"
+    fi
+  fi
   echo "$raw"
 }
 

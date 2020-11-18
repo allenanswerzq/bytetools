@@ -28,7 +28,7 @@ for i in $inputs; do
   print_color '^' "XY ${i%.in}"
   # full_line '-'
   if [[ $debug == true || $log == true ]]; then
-    print_stdout "$i"
+    print_stdout "$i" "false"
   fi
 
   # run: .inp --> .out
@@ -100,5 +100,6 @@ if [[ $debug == true ]]; then
 fi
 
 # Post work to clean up source file for submiting.
-byte-post "$target"
-pbcopy < "$target.cl" && pbpaste 2>&1 >/dev/null
+if byte-post "$target"; then
+  pbcopy < "$target.cl" && pbpaste 2>&1 >/dev/null
+fi
