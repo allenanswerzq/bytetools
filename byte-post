@@ -17,9 +17,24 @@ def check(text, i, word):
   return text[i : i + m] == word
 
 def main():
-  raw = None
+  lines = None
   with open(FILE_NAME + CC_SUFFIX) as f:
-    raw = f.read()
+    lines = f.readlines()
+  # print(lines)
+
+  raw = ""
+  for line in lines:
+    if "Graphviz" in line:
+      continue
+    if "gvAddEdge" in line:
+      continue
+    if "gvDrawGraph" in line:
+      continue
+    if "gvSetDirected" in line:
+      continue
+
+    raw += line
+  # print(raw)
 
   n = len(raw)
   text = ""

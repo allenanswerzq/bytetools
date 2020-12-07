@@ -13,7 +13,7 @@ CXXFLAGS += -Wfloat-equal
 CXXFLAGS += -Wcast-qual
 CXXFLAGS += -Wcast-align
 CXXFLAGS += -fvisibility=hidden
-# CXXFLAGS += -Wconversion
+CXXFLAGS += -Wconversion
 
 #-------------------------------------------------------------------------------
 # By default sets to debug mode.
@@ -24,10 +24,13 @@ ifeq ($(DEBUG), 1)
 	DBGFLAGS += -g
 	DBGFLAGS += -fsanitize=address
 	DBGFLAGS += -fsanitize=undefined
+	DBGFLAGS += -fno-omit-frame-pointer
 	DBGFLAGS += -fno-sanitize-recover
 	DBGFLAGS += -DLOCAL
+	# These three debug flags below will mess extc++.h up.
   DBGFLAGS += -D_GLIBCXX_DEBUG
   DBGFLAGS += -D_GLIBCXX_DEBUG_PEDANTIC
+  DBGFLAGS += -D_GLIBCXX_ASSERTIONS
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
 	# -fstack-protector
@@ -77,7 +80,6 @@ curdir: accpected_time
 #-------------------------------------------------------------------------------
 ifeq ($(DEBUG), 1)
 % : %.cc
-<<<<<<< HEAD
 	@echo "[debug -O0] cxx $<"
 	@$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
 else
@@ -85,14 +87,10 @@ else
 	@echo "[release -O2] cxx $<"
 	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
 endif
-=======
-	$(CXX) $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@ $(CXXLIBS) $(CXXINCS)
->>>>>>> d4ae663 (Update)
 
 #-------------------------------------------------------------------------------
 %.cl : %.cc
-	@echo "byte-post"
-	@byte-post $(ELF)
+	byte-post $(ELF)
 	@pbcopy < $(ELF).cl && pbpaste 2>&1 >/dev/null
 
 #-------------------------------------------------------------------------------
@@ -134,16 +132,8 @@ test: samples $(ELF)
 	@echo byte-run $(ELF)
 	@byte-run $(ELF) $(DEBUG) $(RLOG)
 
-<<<<<<< HEAD
 #-------------------------------------------------------------------------------
 compare: deepclean $(ELF) $(GEN) $(CMP)
-=======
-somp: samples $(CMP)
-	@echo byte-test
-	@byte-run $(CMP) $(DEBUG) $(RLOG)
-
-comp: deepclean $(ELF) $(GEN) $(CMP)
->>>>>>> d4ae663 (Update)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 

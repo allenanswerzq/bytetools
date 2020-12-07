@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 set -o pipefail
 set -e
 
-CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURRENT_DIR="$ALGO/bytetools"
 source "$CURRENT_DIR/byte-com"
 
 # When press ctrl+c, it will call `trap_ctrlc`.
@@ -11,19 +11,18 @@ trap "trap_ctrlc" 2
 debug=true
 log=true
 target="$1"
-inputs="$(ls *.in | sort -g)"
 if [[ "$2" == "0" ]]; then debug=false; fi
 if [[ "$3" == "0" ]]; then log=false; fi
 
 test_cnt="$(ls *.in | wc -l)"
-for i in $(seq "$test_cnt" 100); do
-  rm -f "$i.out"
-  rm -f "$i.res"
-done
+seq "$test_cnt" 100 | env_parallel rm -f "$i.out" "$i.res"
 
-total_cnt=0
-correct_cnt=0
-for i in $inputs; do
+export total_cnt=0
+export correct_cnt=0
+# for i in `ls *.in | sort -g`; do
+test_case() {
+  i=$1
+  std_err="${i%.in}"_std_err
   # Print input samples
   print_color '^' "XY ${i%.in}"
   # full_line '-'
@@ -37,15 +36,15 @@ for i in $inputs; do
   rel="${i%.in}".out
   if [[ $debug == true ]]; then
     # Kill(9) after TIME_LIMITS seconds past.
-    cmd="$timeout -s9 $TIME_LIMITS ./$target < $i >$out 2>std_err"
+    cmd="$timeout -s9 $TIME_LIMITS ./$target <$i >$out 2>$std_err"
   else
-    cmd="$timeout -s9 $TIME_LIMITS time ./$target < $i >$out 2>std_err"
+    cmd="$timeout -s9 $TIME_LIMITS time ./$target <$i >$out 2>$std_err"
   fi
 
   if ! { bash -c "$cmd"; }; then
     error_split '-' "run error"
-    print_stdout std_err
-    rm -rf std_err
+    print_stdout $std_err
+    # rm -rf $std_err
     full_error_line '-'
     error "Run Error, Might exceed the ($TIME_LIMITS)s limit or other issues."
     exit 1
@@ -53,7 +52,7 @@ for i in $inputs; do
 
   if [[ $debug == true ]]; then
     print_split '-' "debug"
-    print_stdout std_err
+    print_stdout $std_err
   fi
 
   if [[ $debug == true || $log == true ]]; then
@@ -63,8 +62,8 @@ for i in $inputs; do
 
   if [[ $debug == false ]]; then
     print_split '-' "time"
-    print_stdout std_err
-    rm -rf std_err
+    print_stdout $std_err
+    rm -rf $std_err
   fi
 
   total_cnt=$((total_cnt + 1))
@@ -87,19 +86,23 @@ for i in $inputs; do
   if [[ $debug != true ]]; then
     echo -e "\n"
   fi
-done
+}
+# done
+ls *.in | sort -g | env_parallel -k --lb test_case
+
 
 print_split '=' "done"
 
-if [[ $debug == true ]]; then
-  if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
-    pass "ALL TESTS PASSED."
-  else
-    error "SOME TESTS FAILED."
-  fi
-fi
+# if [[ $debug == true ]]; then
+#   if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
+#     pass "ALL TESTS PASSED."
+#   else
+#     error "SOME TESTS FAILED."
+#   fi
+# fi
 
 # Post work to clean up source file for submiting.
 if byte-post "$target"; then
   pbcopy < "$target.cl" && pbpaste 2>&1 >/dev/null
 fi
+

@@ -3,6 +3,7 @@ set -e
 
 # BYTETOOLS sepcifies where this reop located.
 BYTETOOLS="$ALGO/bytetools"
+EDITOR="subl"
 
 if [[ -z "$ALGO" ]]; then
   echo "Expected ALGO environment to be set."
@@ -27,7 +28,7 @@ if [[ "$1" == "-m" ]]; then
   shift
 elif [[ "$1" == "gen" ]]; then
   cat "$GEN_TEM" > "$GEN_SRC"
-  subl "$GEN_SRC"
+  $EDITOR "$GEN_SRC"
   exit 0
 elif [[ "$1" == "cmp" ]]; then
   prb=$(basename "$problem")
@@ -35,7 +36,7 @@ elif [[ "$1" == "cmp" ]]; then
   sed -e "s/\\\$NAME/$prb/g" \
       -e "s/\\\$DATE/$ctime/g" \
       "$PRB_TEM" > "$CMP_SRC"
-	subl "$CMP_SRC"
+	$EDITOR "$CMP_SRC"
 	exit 0
 fi
 
@@ -63,9 +64,9 @@ cd $problem
 inp="$prb.ii"
 src="$prb.cc"
 touch "$inp" && echo "null" > "$inp"
-subl "$inp"
+$EDITOR "$inp"
 # Sleep for a while so that the sublime plugin can work
 # to put the newly created file at the most right tab.
 sleep 0.1
-subl "$src"
+$EDITOR "$src"
 byte-repl $prb
