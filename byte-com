@@ -87,16 +87,20 @@ print_color() {
 
 print_stdout() {
   if [[ ! -f "$1" ]]; then return 0; fi
-  sed -n '1,20p' $1 | while read line; do
-    local c=$(echo $line | wc -c)
-    if [[ c -ge 200 ]]; then
-      line="$(echo $line | head -c 200)......(too long ignored)......"
+  if [[ -z "$2" ]]; then
+    cat $1
+  else
+    sed -n '1,20p' $1 | while read line; do
+      local c=$(echo $line | wc -c)
+      if [[ c -ge 1000 ]]; then
+        line="$(echo $line | head -c 1000)......(too long ignored)......"
+      fi
+      echo $line
+    done
+    local d=$(cat $1 | wc -l)
+    if [[ d -ge 20 ]]; then
+      echo ".....(too long ignored)......"
     fi
-    echo $line
-  done
-  local d=$(cat $1 | wc -l)
-  if [[ d -ge 20 ]]; then
-    echo ".....(too long ignored)......"
   fi
 }
 
