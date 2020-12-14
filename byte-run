@@ -16,9 +16,9 @@ if [[ "$3" == "0" ]]; then log=false; fi
 
 test_cnt="$(ls *.in | wc -l)"
 seq "$test_cnt" 100 | env_parallel rm -f "$i.out" "$i.res"
+rm -f "*.correct"
 
-export total_cnt=0
-export correct_cnt=0
+total_cnt=0
 # for i in `ls *.in | sort -g`; do
 test_case() {
   i=$1
@@ -66,10 +66,9 @@ test_case() {
     rm -rf $std_err
   fi
 
-  total_cnt=$((total_cnt + 1))
   if [[ -e "$rel" ]]; then
     if diff -y "$out" "$rel" >/dev/null 2>&1; then
-      correct_cnt=$((correct_cnt + 1))
+      touch $i.correct
       pass_right "PASSED"
     else
       error_right "Failed"
@@ -80,7 +79,7 @@ test_case() {
       fi
     fi
   else
-    correct_cnt=$((correct_cnt + 1))
+    touch $i.correct
     error_right "Custom"
   fi
   if [[ $debug != true ]]; then
@@ -90,16 +89,23 @@ test_case() {
 # done
 ls *.in | sort -g | env_parallel -k --lb test_case
 
-
 print_split '=' "done"
 
-# if [[ $debug == true ]]; then
-#   if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
-#     pass "ALL TESTS PASSED."
-#   else
-#     error "SOME TESTS FAILED."
-#   fi
-# fi
+total_cnt=$(ls *.in | wc -l)
+if { ls *.correct } &>/dev/null 2>&1; then
+  correct_cnt=$(ls *.correct | wc -l)
+else
+  correct_cnt="0"
+fi
+if [[ $debug == true ]]; then
+  if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
+    pass "ALL TESTS PASSED."
+  else
+    error "SOME TESTS FAILED."
+  fi
+fi
+
+{ rm -f *.correct } &> /dev/null
 
 # Post work to clean up source file for submiting.
 if byte-post "$target"; then
