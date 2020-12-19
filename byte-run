@@ -24,7 +24,7 @@ test_case() {
   i=$1
   std_err="${i%.in}"_std_err
   # Print input samples
-  print_color '^' "XY ${i%.in}"
+  print_color '^' "Test ${i%.in}"
   # full_line '-'
   if [[ $debug == true || $log == true ]]; then
     print_stdout "$i" "false"
@@ -98,11 +98,14 @@ else
   correct_cnt="0"
 fi
 if [[ $debug == true ]]; then
-  if [[ $total_cnt -gt 0 && $correct_cnt -eq $total_cnt ]]; then
-    pass "ALL TESTS PASSED."
-  else
-    error "SOME TESTS FAILED."
-  fi
+  total_cnt=$((total_cnt - 1));
+  for i in $(seq 0 $total_cnt); do
+    if [[ -f $i.in.correct ]]; then
+      pass "TEST $i PASSED."
+    else
+      error "TEST $i FAILED."
+    fi
+  done
 fi
 
 { rm -f *.correct } &> /dev/null
