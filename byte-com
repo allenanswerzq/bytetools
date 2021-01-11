@@ -92,8 +92,8 @@ print_stdout() {
   else
     sed -n '1,20p' $1 | while read line; do
       local c=$(echo $line | wc -c)
-      if [[ c -ge 1000 ]]; then
-        line="$(echo $line | head -c 1000)......(too long ignored)......"
+      if [[ c -ge 200 ]]; then
+        line="$(echo $line | head -c 200)......(too long ignored)......"
       fi
       echo $line
     done

@@ -19,6 +19,26 @@ seq "$test_cnt" 100 | env_parallel rm -f "$i.out" "$i.res"
 rm -f "*.correct"
 
 total_cnt=0
+
+show_result() {
+  total_cnt=$(ls *.in | wc -l)
+  if { ls *.correct } &>/dev/null 2>&1; then
+    correct_cnt=$(ls *.correct | wc -l)
+  else
+    correct_cnt="0"
+  fi
+  if [[ $debug == true ]]; then
+    total_cnt=$((total_cnt - 1));
+    for i in $(seq 0 $total_cnt); do
+      if [[ -f $i.in.correct ]]; then
+        pass "TEST $i PASSED."
+      else
+        error "TEST $i FAILED."
+      fi
+    done
+  fi
+}
+
 # for i in `ls *.in | sort -g`; do
 test_case() {
   i=$1
@@ -71,7 +91,7 @@ test_case() {
       touch $i.correct
       pass_right "PASSED"
     else
-      error_right "Failed"
+      error_right "FAILED"
       if [[ $log == true ]]; then
         error_split '-' "compare"
         width=$((WIDTH / 2 / 8 + 2))
@@ -86,32 +106,16 @@ test_case() {
     echo -e "\n"
   fi
 }
-# done
+
 ls *.in | sort -g | env_parallel -k --lb test_case
-
-print_split '=' "done"
-
-total_cnt=$(ls *.in | wc -l)
-if { ls *.correct } &>/dev/null 2>&1; then
-  correct_cnt=$(ls *.correct | wc -l)
-else
-  correct_cnt="0"
-fi
-if [[ $debug == true ]]; then
-  total_cnt=$((total_cnt - 1));
-  for i in $(seq 0 $total_cnt); do
-    if [[ -f $i.in.correct ]]; then
-      pass "TEST $i PASSED."
-    else
-      error "TEST $i FAILED."
-    fi
-  done
-fi
-
-{ rm -f *.correct } &> /dev/null
 
 # Post work to clean up source file for submiting.
 if byte-post "$target"; then
   pbcopy < "$target.cl" && pbpaste 2>&1 >/dev/null
 fi
+
+print_split '=' "done"
+show_result
+
+{ rm -f *.correct } &> /dev/null
 

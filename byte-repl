@@ -20,7 +20,7 @@ fi
 while true ; do
   clear && tmux clear-history
   ctime=$(date "+%Y-%m-%d %H:%M:%S")
-  perl -pi -e "s|.*accepted.*| \* accepted  : $ctime|g" "$prb".cc
+  # perl -pi -e "s|.*accepted.*| \* accepted  : $ctime|g" "$prb".cc
   sleep 0.1
   $cmd
   echo -n "Press Enter to continue"
