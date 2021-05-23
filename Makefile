@@ -1,4 +1,4 @@
-CXX = g++-9
+CXX = g++
 SHELL = /bin/bash -o pipefail
 ALGOROOT = ${ALGO}
 
@@ -62,9 +62,12 @@ endif
 	@byte-post $(ELF)
 	@pbcopy < $(ELF).cl && pbpaste 2>&1 >/dev/null
 
-%_mp : %.mp
-	@echo "cxx $<"
-	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $< $(LDFLAGS) -o $@
+%_mp :
+ifneq (,$(wildcard $(ELF).mp))
+	@echo "cxx $(ELF).mp"
+	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $(ELF).mp $(LDFLAGS) -o $@
+endif
+	@echo "------------------"
 
 %_ge : %.ge
 	@echo "cxx $<"

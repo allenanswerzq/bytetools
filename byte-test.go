@@ -269,7 +269,7 @@ func main() {
 	// Usage: byte-test --cnt 10 "any"
 	if len(os.Args) >= 3 {
 		if os.Args[1] == "--cnt" {
-			xy_cnts, _ = strconv.Atoi(os.Args[3])
+			xy_cnts, _ = strconv.Atoi(os.Args[2])
 			xy_cnts = xy_cnts / xy_kthreds * xy_kthreds
 		}
 	}
