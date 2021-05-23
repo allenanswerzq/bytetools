@@ -64,10 +64,12 @@ endif
 
 %_mp :
 ifneq (,$(wildcard $(ELF).mp))
+	# if there exists a compare file
 	@echo "cxx $(ELF).mp"
 	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $(ELF).mp $(LDFLAGS) -o $@
+else
+	;
 endif
-	@echo "------------------"
 
 %_ge : %.ge
 	@echo "cxx $<"
