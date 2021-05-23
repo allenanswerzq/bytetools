@@ -144,7 +144,7 @@ func CleanUp() {
 func TestJob(cid int) {
 	chunk := xy_cnts / xy_kthreds
 	for i := 0; i < chunk; i++ {
-		idx := i + cid*chunk
+		idx := i + cid * chunk
 		ret := RunCmd(fmt.Sprintf("./%s_ge %d >%d.gi 2>gen_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_GEN, idx)
 		ret = RunCmd(fmt.Sprintf("./%s <%d.gi >%d.ga 2>run_err_%d", xy, idx, idx, idx))
@@ -259,9 +259,9 @@ func GetWidth() int {
 		uintptr(syscall.Stdin),
 		uintptr(syscall.TIOCGWINSZ),
 		uintptr(unsafe.Pointer(ws)))
-	if int(ret) == -1 {
-		panic(err)
-	}
+		if int(ret) == -1 {
+			panic(err)
+		}
 	return int(ws.Col)
 }
 
@@ -269,7 +269,7 @@ func main() {
 	// Usage: byte-test --cnt 10 "any"
 	if len(os.Args) >= 3 {
 		if os.Args[1] == "--cnt" {
-			xy_cnts, _ = strconv.Atoi(os.Args[2])
+			xy_cnts, _ = strconv.Atoi(os.Args[3])
 			xy_cnts = xy_cnts / xy_kthreds * xy_kthreds
 		}
 	}
@@ -277,9 +277,11 @@ func main() {
 		val, _ := strconv.Atoi(os.Args[3])
 		if val > 0 {
 			xy_keep_log = true
-			fmt.Println("run and keep log")
+			fmt.Println("[byte-test] run and keep log")
 		}
 	}
+
+	fmt.Println(fmt.Sprintf("[byte-test] run %d jobs on %d goroutines", xy_cnts, xy_kthreds));
 
 	// Get the current directory name
 	cwd, _ := os.Getwd()
