@@ -8,7 +8,7 @@ using ll = long long;
 void generate() {
 }
 
-int main(int argc, char** argv) {
+int main() {
   generate();
   return 0;
 }

@@ -199,14 +199,14 @@ func HandleError() {
 		} else if job_state.stage == STAGE_RUN {
 			xy_failed_cases = append(xy_failed_cases, idx);
 			LogInfo(fmt.Sprintf("running error %d", idx));
-			// DrawSplit("-", fmt.Sprintf("running error %d", idx))
-			// DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
-			// DrawSplit("-", "")
-			inp := fmt.Sprintf("%d.gi", idx)
+			DrawSplit("-", fmt.Sprintf("running error %d", idx))
+			DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
+			DrawSplit("-", "")
+			// inp := fmt.Sprintf("%d.gi", idx)
 			// DumpStderr(string(ReadFile(inp)))
 			// DrawSplit("-", "")
-			data := "\n" + string(ReadFile(inp))
-			WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
+			// data := "\n" + string(ReadFile(inp))
+			// WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
 		} else if job_state.stage == STAGE_CMP {
 			xy_failed_cases = append(xy_failed_cases, idx);
 			LogInfo(fmt.Sprintf("comparing error %d", idx));
