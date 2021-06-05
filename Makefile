@@ -118,7 +118,7 @@ deepclean: clean
 	@-rm -rf *.gg *.ga *.gb *_err_* *.gi std_err
 
 #-------------------------------------------------------------------------------
-samples: clean
+samples:
 	@rm -rf *.in
 	@echo byte-sample $(INP)
 	@byte-sample $(INP)
@@ -135,11 +135,11 @@ test: samples $(ELF)
 #-------------------------------------------------------------------------------
 ifneq (,$(wildcard $(ELF).ge))
 # if there exists a generate file
-compare: deepclean $(ELF) $(GEN) $(CMP)
+compare: $(ELF) $(GEN) $(CMP)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 else
-compare: deepclean samples $(ELF) $(CMP)
+compare: samples $(ELF) $(CMP)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 endif
