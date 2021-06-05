@@ -133,9 +133,16 @@ test: samples $(ELF)
 	@byte-run $(ELF) $(DEBUG) $(RLOG)
 
 #-------------------------------------------------------------------------------
+ifneq (,$(wildcard $(ELF).ge))
+# if there exists a generate file
 compare: deepclean $(ELF) $(GEN) $(CMP)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
+else
+compare: deepclean samples $(ELF) $(CMP)
+	@echo byte-test
+	@byte-test $(CNT) $(LOG)
+endif
 
 #-------------------------------------------------------------------------------
 # Run with random generated input data.

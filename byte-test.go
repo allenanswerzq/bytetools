@@ -85,6 +85,7 @@ var xy_need_compare = false
 var xy_timeout string
 var xy_kthreds int = 4
 var xy_keep_log bool = false
+var xy_has_generate bool = false
 var xy_failed_cases []int
 var terminal_width int = 0
 
@@ -141,11 +142,26 @@ func CleanUp() {
 	RunCmd("rm -f *.gi *.gb *.ga *_err_*")
 }
 
+func GetSampleCount() int {
+	// Brute force way of counting files
+	for i := 0; i < 10; i++ {
+		if !FileExist(fmt.Sprintf("%d.in", i)) {
+			return i
+		}
+	}
+	return 0
+}
+
 func TestJob(cid int) {
 	chunk := xy_cnts / xy_kthreds
 	for i := 0; i < chunk; i++ {
 		idx := i + cid * chunk
-		ret := RunCmd(fmt.Sprintf("./%s_ge %d >%d.gi 2>gen_err_%d", xy, idx, idx, idx))
+		ret := true
+		if xy_has_generate {
+			ret = RunCmd(fmt.Sprintf("./%s_ge %d >%d.gi 2>gen_err_%d", xy, idx, idx, idx))
+		} else {
+			ret = RunCmd(fmt.Sprintf("cp -f %d.in %d.gi", idx, idx))
+		}
 		KillIfError(ret, STAGE_GEN, idx)
 		ret = RunCmd(fmt.Sprintf("./%s <%d.gi >%d.ga 2>run_err_%d", xy, idx, idx, idx))
 		KillIfError(ret, STAGE_RUN, idx)
@@ -265,6 +281,13 @@ func GetWidth() int {
 	return int(ws.Col)
 }
 
+func Min(a, b int) int {
+  if a < b {
+    return a
+  }
+  return b
+}
+
 func main() {
 	// Usage: byte-test --cnt 10 "any"
 	if len(os.Args) >= 3 {
@@ -281,8 +304,6 @@ func main() {
 		}
 	}
 
-	fmt.Println(fmt.Sprintf("[byte-test] run %d jobs on %d goroutines", xy_cnts, xy_kthreds));
-
 	// Get the current directory name
 	cwd, _ := os.Getwd()
 	tmp := strings.Split(cwd, "/")
@@ -295,6 +316,13 @@ func main() {
 		xy_need_compare = true
 	}
 
+	if FileExist(xy + "_ge") {
+		xy_has_generate = true
+	} else {
+		xy_kthreds = Min(xy_kthreds, GetSampleCount())
+		xy_cnts = xy_kthreds
+	}
+
 	// Chose the correct timeout command to use.
 	if runtime.GOOS == "linux" {
 		xy_timeout = "timeout"
@@ -303,6 +331,9 @@ func main() {
 	}
 
 	CleanUp()
+
+	fmt.Println(fmt.Sprintf("[byte-test] run %d jobs on %d goroutines", xy_cnts, xy_kthreds));
+
 	xy_channel_send = make(chan bool)
 	xy_channel_recv = make(chan bool)
 	// NOTE: only spwan 4 goroutines to do all the jobs.
