@@ -96,7 +96,7 @@ endif
 #-------------------------------------------------------------------------------
 ifneq (,$(wildcard $(ELF).mp))
 # if there exists a compare file
-%_mp : %(ELF).mp
+%_mp : %.mp
 	@echo "[debug -O2] cxx $(ELF).mp"
 	@$(CXX) -x c++ $(CXXFLAGS) $(DBGFLAGS) $(ELF).mp $(LDFLAGS) -o $@
 else
@@ -107,7 +107,7 @@ endif
 #-------------------------------------------------------------------------------
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS)
+	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS) -I$(ALGOROOT)/third_party/jngen/includes
 
 #-------------------------------------------------------------------------------
 clean:
