@@ -107,7 +107,7 @@ endif
 #-------------------------------------------------------------------------------
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS) -I$(ALGOROOT)/third_party/jngen/includes
+	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS) $(CXXFLAGS)
 
 #-------------------------------------------------------------------------------
 clean:
