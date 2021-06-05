@@ -89,6 +89,9 @@ var xy_has_generate bool = false
 var xy_failed_cases []int
 var terminal_width int = 0
 
+// TODO: make this configuable
+var xy_show_err_log bool = true
+
 func DrawSplit(ch string, msg string) {
 	tot := terminal_width
 	printer := color.New(color.FgRed, color.Bold)
@@ -208,51 +211,61 @@ func HandleError() {
 		xy_done_mutex.Lock()
 		if job_state.stage == STAGE_GEN {
 			xy_failed_cases = append(xy_failed_cases, idx);
-			LogInfo(fmt.Sprintf("generating error %d", idx));
-			// DrawSplit("-", fmt.Sprintf("generating error %d", idx))
-			// DumpStderr(string(ReadFile(fmt.Sprintf("gen_err_%d", idx))))
-			// DrawSplit("-", "")
+			if xy_show_err_log {
+				LogInfo(fmt.Sprintf("generating error %d", idx));
+				DrawSplit("=", fmt.Sprintf("generating error %d", idx))
+				DumpStderr(string(ReadFile(fmt.Sprintf("gen_err_%d", idx))))
+				DrawSplit("=", "")
+			}
 		} else if job_state.stage == STAGE_RUN {
 			xy_failed_cases = append(xy_failed_cases, idx);
-			LogInfo(fmt.Sprintf("running error %d", idx));
-			DrawSplit("-", fmt.Sprintf("running error %d", idx))
-			DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
-			DrawSplit("-", "")
-			// inp := fmt.Sprintf("%d.gi", idx)
-			// DumpStderr(string(ReadFile(inp)))
-			// DrawSplit("-", "")
-			// data := "\n" + string(ReadFile(inp))
-			// WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
+			if (xy_show_err_log) {
+				LogInfo(fmt.Sprintf("running error %d", idx));
+				DrawSplit("=", fmt.Sprintf("running error %d", idx))
+				DumpStderr(string(ReadFile(fmt.Sprintf("run_err_%d", idx))))
+				DrawSplit("=", "")
+				inp := fmt.Sprintf("%d.gi", idx)
+				DumpStderr(string(ReadFile(inp)))
+				DrawSplit("=", "")
+				data := "\n" + string(ReadFile(inp))
+				WriteFile(fmt.Sprintf("%s.in", xy), []byte(data))
+			}
 		} else if job_state.stage == STAGE_CMP {
 			xy_failed_cases = append(xy_failed_cases, idx);
-			LogInfo(fmt.Sprintf("comparing error %d", idx));
-			// DrawSplit("-", fmt.Sprintf("comparing error %d", idx))
-			// DumpStderr(string(ReadFile(fmt.Sprintf("cmp_err_%d", idx))))
-			// DrawSplit("-", "")
-			// DumpStderr(string(ReadFile(fmt.Sprintf("%d.gi", idx))))
-			// DrawSplit("-", "")
+			if (xy_show_err_log) {
+				LogInfo(fmt.Sprintf("comparing error %d", idx));
+				DrawSplit("=", fmt.Sprintf("comparing error %d", idx))
+				DumpStderr(string(ReadFile(fmt.Sprintf("cmp_err_%d", idx))))
+				DrawSplit("=", "")
+				DumpStderr(string(ReadFile(fmt.Sprintf("%d.gi", idx))))
+				DrawSplit("=", "")
+			}
 		} else if job_state.stage == STAGE_DIF {
 			LogInfo(fmt.Sprintf("diffing error %d", idx));
 			xy_failed_cases = append(xy_failed_cases, idx);
-			// DrawSplit("-", fmt.Sprintf("diffing error %d", idx))
-			// DumpStderr(string(ReadFile(fmt.Sprintf("dif_err_%d", idx))))
-			// DrawSplit("-", "input")
 			inp := fmt.Sprintf("%d.gi", idx)
-			// // DumpStderr(string(ReadFile(inp)))
-			// data := string(ReadFile(fmt.Sprintf("gen_err_%d", idx)))
-			// if len(data) > 0 {
-			// 	DrawSplit("-", "generate info")
-			// 	DumpStderr(data)
-			// }
-			// data = string(ReadFile(fmt.Sprintf("run_err_%d", idx)))
-			// if len(data) > 0 {
-			// 	DrawSplit("-", "running info")
-			// 	DumpStderr(data)
-			// }
-			// DrawSplit("-", "")
-			data := "\nInput\n" + string(ReadFile(inp)) + "Output\n"
-			data += string(ReadFile(fmt.Sprintf("%d.gb", idx)))
-			WriteFile(fmt.Sprintf("%s.ii", xy), []byte(data))
+			if xy_show_err_log {
+				DrawSplit("=", fmt.Sprintf("diffing error %d", idx))
+				DumpStderr(string(ReadFile(fmt.Sprintf("dif_err_%d", idx))))
+				DrawSplit("=", "input")
+				// data := string(ReadFile(fmt.Sprintf("gen_err_%d", idx)))
+				// if len(data) > 0 {
+				// 	DrawSplit("=", "generate info")
+				// 	DumpStderr(data)
+				// }
+				DumpStderr(string(ReadFile(inp)))
+				data := string(ReadFile(fmt.Sprintf("run_err_%d", idx)))
+				if len(data) > 0 {
+					DrawSplit("=", "running info")
+					DumpStderr(data)
+				}
+				DrawSplit("=", "")
+			}
+			if xy_has_generate {
+				data := "\nInput\n" + string(ReadFile(inp)) + "Output\n"
+				data += string(ReadFile(fmt.Sprintf("%d.gb", idx)))
+				WriteFile(fmt.Sprintf("%s.ii", xy), []byte(data))
+			}
 		} else {
 			log.Fatal()
 		}
