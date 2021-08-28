@@ -16,9 +16,9 @@ CXXFLAGS += -fvisibility=hidden
 CXXFLAGS += -Wconversion
 
 #-------------------------------------------------------------------------------
-# By default sets to debug mode.
+
 DEBUG ?= 1
-RLOG ?= 1
+LOG ?= 1
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -O0
 	DBGFLAGS += -g
@@ -28,9 +28,9 @@ ifeq ($(DEBUG), 1)
 	DBGFLAGS += -fno-sanitize-recover
 	DBGFLAGS += -DLOCAL
 	# These three debug flags below will mess extc++.h up.
-  DBGFLAGS += -D_GLIBCXX_DEBUG
-  DBGFLAGS += -D_GLIBCXX_DEBUG_PEDANTIC
-  DBGFLAGS += -D_GLIBCXX_ASSERTIONS
+	DBGFLAGS += -D_GLIBCXX_DEBUG
+	DBGFLAGS += -D_GLIBCXX_DEBUG_PEDANTIC
+	DBGFLAGS += -D_GLIBCXX_ASSERTIONS
 	# Since this flag will cause a AddressSantizer error on my debug
 	# function `trace`, so here I just simply comment out this one.
 	# -fstack-protector
@@ -41,8 +41,8 @@ endif
 #-------------------------------------------------------------------------------
 # For local debug purpose
 CXXINCS =
-CXXFLAGS += -I$(ALGOROOT)
-CXXFLAGS += -I$(ALGOROOT)/third_party/jngen/includes
+CXXINCS += -I$(ALGOROOT)
+CXXINCS += -I$(ALGOROOT)/third_party/jngen/includes
 CXXLIBS += -lgvc -lcgraph -lcdt
 
 # byte-test config
@@ -57,8 +57,8 @@ all: curdir test
 
 help:
 	@echo -e "Usage:"
-	@echo -e "\t make DEBUG=0 RLOG=0"
-	@echo -e "\t bmk  DEBUG=0 RLOG=0"
+	@echo -e "\t make DEBUG=0 LOG=0"
+	@echo -e "\t bmk  DEBUG=0 LOG=0"
 	@echo -e "\t byte-test CNT=4 LOG=0"
 	@echo -e "\t bsc                     generate compare file"
 	@echo -e "\t bsg                     generate random tests"
@@ -66,6 +66,8 @@ help:
 	@echo -e "\t make compile;           only compile"
 	@echo -e "\t make compare;           DEBUG=0 LOG=1 CNT=4; do compare"
 	@echo -e "\t make random;            run with random generated inputs"
+	@echo -e "\t make gen;               generated inputs"
+	@echo -e "\t make run_gen;           run with generated inputs"
 
 #-------------------------------------------------------------------------------
 # ref: https://stackoverflow.com/questions/10024279/how-to-use-shell-commands-in-makefile
@@ -107,7 +109,7 @@ endif
 #-------------------------------------------------------------------------------
 %_ge : %.ge
 	@echo "cxx $<"
-	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS) $(CXXFLAGS)
+	@$(CXX) -x c++ --std=c++17 -DLOCAL $< $(CXXINCS) -o $@ $(CXXLIBS)
 
 #-------------------------------------------------------------------------------
 clean:
@@ -130,7 +132,7 @@ compile: curdir $(ELF)
 # Run with sample input.
 test: samples $(ELF)
 	@echo byte-run $(ELF)
-	@byte-run $(ELF) $(DEBUG) $(RLOG)
+	@byte-run $(ELF) $(DEBUG) $(LOG)
 
 #-------------------------------------------------------------------------------
 ifneq (,$(wildcard $(ELF).ge))
@@ -146,7 +148,7 @@ endif
 
 #-------------------------------------------------------------------------------
 # Run with random generated input data.
-random: $(GEN) $(ELF)
+random: curdir $(GEN) $(ELF)
 	@echo byte-test
 	@byte-test $(CNT) $(LOG)
 
@@ -160,12 +162,17 @@ gen: $(GEN)
 	./$(GEN)
 
 #-------------------------------------------------------------------------------
+gen_run: $(GEN) $(ELF) post
+	./$(GEN) | tee $(ELF).gen_out
+	./$(ELF) < $(ELF).gen_out
+
+#-------------------------------------------------------------------------------
 memory: $(ELF)
 	@echo byte-memory
 	@byte-memory $(ELF)
 
 #-------------------------------------------------------------------------------
-.PHONY: all clean run test comp run
+.PHONY: all clean run test random compare compile
 
 #-------------------------------------------------------------------------------
 print-%:

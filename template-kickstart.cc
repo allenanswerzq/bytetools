@@ -5,7 +5,7 @@
 using namespace std;
 #define all(x) (x).begin(), (x).end()
 using ll = long long;
-using ar = array<ll, 2>;
+using ar = array<int, 2>;
 
 void solve() {
 }
